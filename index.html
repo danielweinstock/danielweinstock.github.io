@@ -63,8 +63,8 @@ function initMap() {
             });
 
             // Set info window content
-            var infoContent = '<strong>Job' + data.JobNumber + '</strong>';
-                infoContent+= '<p>' + data.Address + '</p>';
+            var infoContent = '<strong>Job' + data.JobID + '</strong>';
+                infoContent+= '<p><strong>' + data.LocationName + '</strong><br />' + data.Address + '</p>';
 
             // Add info window
             marker.info = new google.maps.InfoWindow({
