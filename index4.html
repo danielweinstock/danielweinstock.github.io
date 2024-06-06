@@ -58,7 +58,7 @@ function initMap() {
             var myLatlng = new google.maps.LatLng(data.Lat, data.Lng); // set position
 
             // Add marker to map
-            var marker = new google.maps.AdvancedMarkerElenment({
+            var marker = new google.maps.marker.AdvancedMarkerElenment({
               map,
               position: myLatlng,
               title: data.JobID,
