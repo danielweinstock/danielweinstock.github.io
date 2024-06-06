@@ -1,0 +1,107 @@
+<html>
+  <head>
+    <title>Google Maps Locator Test</title>
+
+    <style type="text/css">
+      html {
+        height: 100%
+      }
+
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: verdana, arial;
+      }
+
+      #map_canvas {
+        height: 100%;
+        max-height: 600px;
+
+        width: 100%;
+
+        border: 5px solid #eee;
+      }
+
+      .wrap {
+        padding: 25px 0;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="wrap">
+
+      <div id="map_canvas"></div>
+
+    </div>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA"></script>
+
+    <script type="text/javascript">
+      function initialize() {
+
+        // Setup map and options
+        var map = new google.maps.Map(document.getElementById("map_canvas"), {
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        // Get the Json file data
+        $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p", function(data) {
+
+          // Loop through the data
+          $.each(data, function(key, data) {
+
+            var myLatlng = new google.maps.LatLng(data.Lat, data.Lng); // set position
+
+            // Add marker to map
+            var marker = new google.maps.Marker({
+              position: myLatlng,
+              map: map,
+            });
+
+            // Set info window content
+            var infoContent = '<strong>Job' + data.JobNumber + '</strong>';
+                infoContent+= '<p>' + data.Address + '</p>';
+
+            // Add info window
+            marker.info = new google.maps.InfoWindow({
+              content: infoContent
+            });
+
+            // Add listener for info window
+            google.maps.event.addListener(marker, 'click', function() {
+              marker.info.open(map, marker);
+            });
+
+            // Add marker location to loc var
+            var loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
+
+            // extend bounds with loc
+            bounds.extend(loc);
+
+          });
+
+        });
+
+        var bounds  = new google.maps.LatLngBounds();
+
+        map.fitBounds(bounds); // auto zoom
+        map.panToBounds(bounds); // auto center
+
+      }
+    </script>
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+        initialize(); // init map
+      });
+    </script>
+
+  </body>
+</html>
