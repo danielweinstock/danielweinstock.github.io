@@ -82,10 +82,14 @@ function initMap() {
             });
 
             // Add marker location to loc var
+		const bounds = new google.maps.LatLngBounds();
+
+		  
             //var loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
 
             // extend bounds with loc
-           // bounds.extend(loc);
+                bounds.extend(myLatLng);
+		map.fitBounds(bounds);
 
           });
 
