@@ -99,48 +99,50 @@ function initMap() {
 }
 
 function getPin(data){
+	const bgColor;
+	const glpColor;
 	switch(data.Status){
 		case 'Scheduled':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		case 'Dispatched':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		case 'On The Way':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		case 'Started':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		case 'Work Complete':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		case 'Return Required':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		case 'Parts Needed':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		case 'Ready for Invoicing':
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 		default:
-			let bgColor = '#6fdb6b';
+			bgColor = '#6fdb6b';
 			break;
 	}
 	switch(data.Category){
 		case 'On-Site Installation Service':
-			let glyphColor = '#03a9f4';
+			glpColor = '#03a9f4';
 			break;
 		case 'On-Site Reactive Service':
-			let glyphColor = '#9fcc2e';
+			glpColor = '#9fcc2e';
 			break;
 		default:
-			let glyphColor = '#ab47bc';
+			glpColor = '#ab47bc';
 			break;
 	}
 
-	return new google.maps.marker.PinElement({background: bgColor,glyphColor: glyphColor});
+	return new google.maps.marker.PinElement({background: bgColor,glyphColor: glpColor});
 	
 }
 
