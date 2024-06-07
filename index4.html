@@ -48,6 +48,9 @@ function initMap() {
   });
   const trafficLayer = new google.maps.TrafficLayer();
 	const bounds = new google.maps.LatLngBounds();
+// Get the value of 'show' parameter from querystring
+
+	const boundsValue = (new URL(location.href)).searchParams.get('show');
 
   trafficLayer.setMap(map);
 
@@ -90,7 +93,10 @@ function initMap() {
 
             // extend bounds with loc
                 bounds.extend(myLatlng);
-		map.fitBounds(bounds);
+
+		  if(boundsValue == 'all'){
+			map.fitBounds(bounds);
+		  }
 
           });
 
