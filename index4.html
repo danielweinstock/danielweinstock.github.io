@@ -47,6 +47,7 @@ function initMap() {
 	disableDefaultUI: true,
   });
   const trafficLayer = new google.maps.TrafficLayer();
+	const bounds = new google.maps.LatLngBounds();
 
   trafficLayer.setMap(map);
 
@@ -82,7 +83,7 @@ function initMap() {
             });
 
             // Add marker location to loc var
-		const bounds = new google.maps.LatLngBounds();
+		
 
 		  
             //var loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
