@@ -106,28 +106,28 @@ function getPin(data){
 			bgColor = '#6fdb6b';
 			break;
 		case 'Dispatched':
-			bgColor = '#6fdb6b';
+			bgColor = '#30962d';
 			break;
 		case 'On The Way':
-			bgColor = '#6fdb6b';
+			bgColor = '#a6d2e3';
 			break;
 		case 'Started':
-			bgColor = '#6fdb6b';
+			bgColor = '#21586e';
 			break;
-		case 'Work Complete':
-			bgColor = '#6fdb6b';
+		case 'Work Completed': case 'Parts Review': case 'Service Review': case 'Sales Review': case 'Management Review': case 'Clerical Review':
+			bgColor = '#e30035';
 			break;
-		case 'Return Required':
-			bgColor = '#6fdb6b';
+		case 'Return Required': case 'Ready for Redispatch':
+			bgColor = '#ff7214';
 			break;
-		case 'Parts Needed':
-			bgColor = '#6fdb6b';
+		case 'Parts Needed': case 'Waiting for Parts':
+			bgColor = '#f0e62d';
 			break;
-		case 'Ready for Invoicing':
-			bgColor = '#6fdb6b';
+		case 'Ready for Invoicing': case 'Invoiced': case 'Invoice Created':
+			bgColor = '#962c88';
 			break;
 		default:
-			bgColor = '#6fdb6b';
+			bgColor = '#999999';
 			break;
 	}
 	switch(data.Category){
@@ -135,7 +135,7 @@ function getPin(data){
 			glpColor = '#03a9f4';
 			break;
 		case 'On-Site Reactive Service':
-			glpColor = '#9fcc2e';
+			glpColor = '#e30035';
 			break;
 		default:
 			glpColor = '#ab47bc';
