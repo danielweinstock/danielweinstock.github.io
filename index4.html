@@ -44,6 +44,7 @@ function initMap() {
     zoom: 7,
     center: { lat: 42.182020, lng: -72.515020 },
     mapId: "FREEFLOW",
+	disableDefaultUI: true,
   });
   const trafficLayer = new google.maps.TrafficLayer();
 
@@ -55,17 +56,17 @@ function initMap() {
           // Loop through the data
           $.each(data, function(key, data) {
 
-            var myLatlng = new google.maps.LatLng(data.Lat, data.Lng); // set position
+            const myLatlng = new google.maps.LatLng(data.Lat, data.Lng); // set position
 
             // Add marker to map
-            var marker = new google.maps.marker.AdvancedMarkerElement({
+            const marker = new google.maps.marker.AdvancedMarkerElement({
               map,
               position: myLatlng,
               title: "TEST",
             });
 
             // Set info window content
-            var infoContent = '<strong>Job ' + data.JobID + '</strong>';
+            const infoContent = '<strong>Job ' + data.JobID + '</strong>';
                 infoContent+= '<p><strong>' + data.LocationName + '</strong><br />' + data.Address + '</p>';
 
             // Add info window
