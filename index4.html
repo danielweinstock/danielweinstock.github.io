@@ -112,6 +112,7 @@ function initMap() {
 function getPin(data){
 	let bgColor;
 	let glpColor;
+	let brdColor;
 	switch(data.Status){
 		case 'Scheduled':
 			bgColor = '#6fdb6b';
@@ -153,7 +154,23 @@ function getPin(data){
 			break;
 	}
 
-	return new google.maps.marker.PinElement({background: bgColor,glyphColor: glpColor,borderColor: '#000'});
+	switch(data.Priority){
+		case 'High':
+			brdColor: '#e30035';
+			break;
+		case 'Low':
+			brdColor: '#03a9f4';
+			break;
+		default:
+			brdColor: '#000';
+			break;
+	}
+		
+		
+
+
+	
+	return new google.maps.marker.PinElement({background: bgColor,glyphColor: glpColor,borderColor: brdColor});
 	
 }
 
