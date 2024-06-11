@@ -72,8 +72,10 @@ function initMap() {
             });
 
             // Set info window content
-            let infoContent = '<strong>Job ' + data.JobID + '</strong>';
-                infoContent+= '<p><strong>' + data.LocationName + '</strong><br />' + data.Address + '</p>';
+            let infoContent = '<small><em>' + data.Category + '</em></small><br /><br /><strong>Job ' + data.JobID + ' / Work Order ' + data.PONumber +'</strong>';
+                infoContent+= '<p><strong>' + data.Customer + '<br />' + data.LocationName + '</strong><br />' + data.Address + '</p>';
+		                  infoContent+= '<p><strong><a href="' + data.SFURL + '" target="_blank">View Job in Service Fusion</a></p>';
+
 
             // Add info window
             marker.info = new google.maps.InfoWindow({
