@@ -67,7 +67,7 @@
 
     function fetchVehicleData(map) {
       const apiUrl = 'https://api.keeptruckin.com/v2/vehicle_locations?vehicle_ids=1713181&per_page=25&page_no=1';
-      $.ajax({
+      $.getJSON({
         url: apiUrl,
         method: 'GET',
         headers: {
