@@ -66,46 +66,47 @@
     }
 
     function fetchVehicleData(map) {
-      const apiUrl = 'https://api.gomotive.com/v2/vehicle_locations?vehicle_ids=1713181&per_page=25&page_no=1';
-      fetch(apiUrl, {
+      const apiUrl = 'https://api.keeptruckin.com/v2/vehicle_locations?vehicle_ids=1713181&per_page=25&page_no=1';
+      $.ajax({
+        url: apiUrl,
+        method: 'GET',
         headers: {
           'X-Api-Key': '81e4c2dd-f33a-4ab7-97db-2d3fea1a19b4',
-          'Accept': 'application/json',
-          'Content-Type':'application/json'
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        data.vehicles.forEach(vehicleData => {
-          const vehicle = vehicleData.vehicle;
-          const location = vehicle.current_location;
-          const position = new google.maps.LatLng(location.lat, location.lon);
-          const marker = new google.maps.Marker({
-            position,
-            map,
-            title: vehicle.number,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 8,
-              fillColor: '#FF0000',
-              fillOpacity: 0.8,
-              strokeWeight: 2,
-              strokeColor: '#FFFFFF'
+          'accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        success: function(data) {
+          data.vehicles.forEach(vehicleData => {
+            const vehicle = vehicleData.vehicle;
+            const location = vehicle.current_location;
+            const position = new google.maps.LatLng(location.lat, location.lon);
+            const marker = new google.maps.Marker({
+              position,
+              map,
+              title: vehicle.number,
+              icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                fillColor: '#FF0000',
+                fillOpacity: 0.8,
+                strokeWeight: 2,
+                strokeColor: '#FFFFFF'
+              }
+            });
+            let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
+            if (vehicle.current_driver) {
+              infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
             }
+            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+            marker.addListener('click', function() {
+              infoWindow.open(map, marker);
+            });
           });
-          let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
-          if (vehicle.current_driver) {
-            infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
-          }
-          const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-          marker.addListener('click', function() {
-            infoWindow.open(map, marker);
-          });
-        });
-      })
-      .catch(error => {
-        alert("Error fetching vehicle data.");
-        console.error('Error:', error);
+        },
+        error: function(xhr, status, error) {
+          alert("Error fetching vehicle data.");
+          console.error('Error:', error);
+        }
       });
     }
 
