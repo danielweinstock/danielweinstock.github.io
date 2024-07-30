@@ -2,7 +2,6 @@
 <html>
 <head>
   <title>Freeflow Job Viewer</title>
- <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script> -->
   <style>
     #map {
       height: 100%;
@@ -96,7 +95,7 @@
               infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
             }
             const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-            marker.addListener('click, function() {
+            marker.addListener('click', function() {
               infoWindow.open(map, marker);
             });
           });
