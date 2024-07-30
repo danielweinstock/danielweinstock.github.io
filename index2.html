@@ -31,7 +31,7 @@
     }
 
     function fetchJobData(map, bounds, boundsValue) {
-      $.ajax("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
+      $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
         .done(function(data) {
           data.forEach(function(data) {
             const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
@@ -67,7 +67,7 @@
 
     function fetchVehicleData(map) {
       const apiUrl = 'https://api.keeptruckin.com/v2/vehicle_locations?vehicle_ids=1713181&per_page=25&page_no=1';
-      $.getJSON({
+      $.ajax({
         url: apiUrl,
         method: 'GET',
         headers: {
