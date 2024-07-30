@@ -31,7 +31,7 @@
     }
 
     function fetchJobData(map, bounds, boundsValue) {
-      $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
+      $.ajax("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
         .done(function(data) {
           data.forEach(function(data) {
             const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
