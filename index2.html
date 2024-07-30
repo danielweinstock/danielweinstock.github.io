@@ -77,20 +77,26 @@
             const vehicle = vehicleData.vehicle;
             const location = vehicle.current_location;
             const position = new google.maps.LatLng(location.lat, location.lon);
+            const isMoving = location.speed !== null && location.speed > 0;
+            const markerColor = isMoving ? '#00FF00' : '#FF6347'; // Green for moving, tomato red for stopped
             const marker = new google.maps.Marker({
               position,
               map,
               title: vehicle.number,
               icon: {
                 path: google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: '#FF0000',
+                scale: 12, // Increase the scale to make the marker larger
+                fillColor: markerColor,
                 fillOpacity: 0.8,
                 strokeWeight: 2,
                 strokeColor: '#FFFFFF'
-              }
+              },
+              zIndex: 9999 // Ensure the vehicle marker appears on top
             });
             let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
+            infoContent += `<br /><strong>Speed:</strong> ${location.speed !== null ? location.speed + ' mph' : 'N/A'}`;
+            infoContent += `<br /><strong>Odometer:</strong> ${location.odometer !== null ? location.odometer + ' miles' : 'N/A'}`;
+            infoContent += `<br /><strong>Primary Fuel Remaining:</strong> ${location.fuel_primary_remaining_percentage !== null ? location.fuel_primary_remaining_percentage + '%' : 'N/A'}`;
             if (vehicle.current_driver) {
               infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
             }
