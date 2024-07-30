@@ -66,13 +66,11 @@
     }
 
     function fetchVehicleData(map) {
-      const apiUrl = 'https://api.keeptruckin.com/v2/vehicle_locations?vehicle_ids=1713181&per_page=25&page_no=1';
+      const apiUrl = 'https://<your-cloudflare-worker-endpoint>';
       $.ajax({
         url: apiUrl,
         method: 'GET',
         headers: {
-          'X-Api-Key': '81e4c2dd-f33a-4ab7-97db-2d3fea1a19b4',
-          'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
         success: function(data) {
@@ -98,7 +96,7 @@
               infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
             }
             const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-            marker.addListener('click', function() {
+            marker.addListener('click, function() {
               infoWindow.open(map, marker);
             });
           });
@@ -143,7 +141,7 @@
       };
       const bgColor = statusColors[data.Status] || statusColors['default'];
       const glpColor = categoryColors[data.Category] || categoryColors['default'];
-      const brdColor = priorityColors[data.Priority] || priorityColors['default'];
+      const brdColor = priorityColors[data.Priority] || categoryColors['default'];
       return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
     }
 
