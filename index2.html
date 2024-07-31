@@ -117,37 +117,16 @@
 
             if (marker) {
               console.log(`Updating marker for vehicle ${vehicle.id}...`);
-              // Update the position of the existing marker using dot notation
+              // Update the position and content of the existing marker
               marker.position = position;
-
-              // Update the icon and rotation
-              const markerIconContainer = marker.content.querySelector('.fleet-view-marker-icon-container');
-              if (markerIconContainer) {
-                const markerIcon = markerIconContainer.querySelector('.fleet-view-marker-icon');
-                markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
-                if (isMoving) {
-                  markerIcon.style.transform = `rotate(${location.bearing}deg)`;
-                } else {
-                  markerIcon.style.transform = 'rotate(0deg)';
-                }
-              }
+              marker.content = createVehicleMarkerContent(markerIconUrl, isMoving, location.bearing);
             } else {
               console.log(`Creating new marker for vehicle ${vehicle.id}...`);
               // Create a new marker
-              const markerIconContainer = document.createElement('div');
-              markerIconContainer.className = 'fleet-view-marker-icon-container';
-              const markerIcon = document.createElement('div');
-              markerIcon.className = 'fleet-view-marker-icon';
-              markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
-              if (isMoving) {
-                markerIcon.style.transform = `rotate(${location.bearing}deg)`;
-              }
-              markerIconContainer.appendChild(markerIcon);
-
               marker = new google.maps.marker.AdvancedMarkerElement({
                 map,
                 position,
-                content: markerIconContainer,
+                content: createVehicleMarkerContent(markerIconUrl, isMoving, location.bearing),
                 title: vehicle.number,
                 zIndex: 9999 // Ensure the vehicle marker appears on top
               });
@@ -175,6 +154,19 @@
           alert("Error fetching vehicle data.");
         }
       });
+    }
+
+    function createVehicleMarkerContent(markerIconUrl, isMoving, bearing) {
+      const markerIconContainer = document.createElement('div');
+      markerIconContainer.className = 'fleet-view-marker-icon-container';
+      const markerIcon = document.createElement('div');
+      markerIcon.className = 'fleet-view-marker-icon';
+      markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
+      if (isMoving) {
+        markerIcon.style.transform = `rotate(${bearing}deg)`;
+      }
+      markerIconContainer.appendChild(markerIcon);
+      return markerIconContainer;
     }
 
     function getPin(data) {
