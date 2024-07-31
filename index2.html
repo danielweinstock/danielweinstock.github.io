@@ -79,18 +79,20 @@
             const position = new google.maps.LatLng(location.lat, location.lon);
             const isMoving = location.speed !== null && location.speed > 0;
             const markerColor = isMoving ? '#00FF00' : '#FF6347'; // Green for moving, tomato red for stopped
+            const markerIcon = {
+              path: 'M 0,-12 A 12,12 0 1,1 0,12 A 12,12 0 1,1 0,-12 M 0,-4 L 0,-10 L 5,0 L 0,10 L 0,4 Z', // Circle with an arrow
+              fillColor: markerColor,
+              fillOpacity: 0.8,
+              strokeWeight: 2,
+              strokeColor: '#FFFFFF',
+              scale: 12, // Using the scale size specified
+              rotation: location.bearing // Rotate the arrow based on the bearing
+            };
             const marker = new google.maps.Marker({
               position,
               map,
               title: vehicle.number,
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 12, // Increase the scale to make the marker larger
-                fillColor: markerColor,
-                fillOpacity: 0.8,
-                strokeWeight: 2,
-                strokeColor: '#FFFFFF'
-              },
+              icon: markerIcon,
               zIndex: 9999 // Ensure the vehicle marker appears on top
             });
             let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
