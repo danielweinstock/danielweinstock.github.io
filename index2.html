@@ -18,11 +18,18 @@
     .fleet-view-marker-icon {
       width: 48px;
       height: 48px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      transform-origin: center; /* Ensure the rotation origin is the center */
     }
   </style>
   <script>
+    let map;
+    let jobMarkers = [];
+    let vehicleMarkers = [];
+
     function initMap() {
-      const map = new google.maps.Map(document.getElementById("map"), {
+      map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
         center: { lat: 42.182020, lng: -72.515020 },
         mapId: "FREEFLOW",
@@ -33,13 +40,23 @@
       const boundsValue = (new URL(location.href)).searchParams.get('show');
       trafficLayer.setMap(map);
 
-      fetchJobData(map, bounds, boundsValue);
-      fetchVehicleData(map);
+      fetchJobData(bounds, boundsValue);
+      fetchVehicleData();
+
+      // Update job markers every 10 minutes (600000 milliseconds)
+      setInterval(() => fetchJobData(bounds, boundsValue), 600000);
+
+      // Update vehicle positions every 15 seconds (15000 milliseconds)
+      setInterval(fetchVehicleData, 15000);
     }
 
-    function fetchJobData(map, bounds, boundsValue) {
+    function fetchJobData(bounds, boundsValue) {
       $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
         .done(function(data) {
+          // Remove old job markers
+          jobMarkers.forEach(marker => marker.setMap(null));
+          jobMarkers = [];
+
           data.forEach(function(data) {
             const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
             const myPin = getPin(data);
@@ -49,6 +66,7 @@
               title: `${data.JobID} | ${data.LocationName} | ${data.Status}`,
               content: myPin.element,
             });
+
             const techsAssigned = data.Techs ? data.Techs.map(tech => `${tech.first_name} ${tech.last_name}`).join(', ') : '';
             const infoContent = `
               <small><em>${data.Category}</em></small><br /><br />
@@ -61,6 +79,7 @@
             google.maps.event.addListener(marker, 'click', function() {
               marker.info.open(map, marker);
             });
+            jobMarkers.push(marker);
             bounds.extend(myLatlng);
             if (boundsValue === 'all') {
               map.fitBounds(bounds);
@@ -72,7 +91,7 @@
         });
     }
 
-    function fetchVehicleData(map) {
+    function fetchVehicleData() {
       const apiUrl = 'https://motive-vehicles.daniel-ff2.workers.dev/';
       $.ajax({
         url: apiUrl,
@@ -81,6 +100,10 @@
           'Content-Type': 'application/json'
         },
         success: function(data) {
+          // Remove old vehicle markers
+          vehicleMarkers.forEach(marker => marker.setMap(null));
+          vehicleMarkers = [];
+
           data.vehicles.forEach(vehicleData => {
             const vehicle = vehicleData.vehicle;
             const location = vehicle.current_location;
@@ -117,6 +140,7 @@
             marker.addListener('click', function() {
               infoWindow.open(map, marker);
             });
+            vehicleMarkers.push(marker);
           });
         },
         error: function(xhr, status, error) {
