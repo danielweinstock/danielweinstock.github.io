@@ -237,8 +237,10 @@
         center: { lat: 42.182020, lng: -72.515020 },
         mapId: "FREEFLOW",
         disableDefaultUI: true,
-        styles: mapStyle
       });
+
+      map.setOptions({ styles: mapStyle });
+
       const trafficLayer = new google.maps.TrafficLayer();
       const bounds = new google.maps.LatLngBounds();
       const boundsValue = (new URL(location.href)).searchParams.get('show');
