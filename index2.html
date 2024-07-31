@@ -122,12 +122,14 @@
 
               // Update the icon and rotation
               const markerIconContainer = marker.content.querySelector('.fleet-view-marker-icon-container');
-              const markerIcon = markerIconContainer.querySelector('.fleet-view-marker-icon');
-              markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
-              if (isMoving) {
-                markerIcon.style.transform = `rotate(${location.bearing}deg)`;
-              } else {
-                markerIcon.style.transform = 'rotate(0deg)';
+              if (markerIconContainer) {
+                const markerIcon = markerIconContainer.querySelector('.fleet-view-marker-icon');
+                markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
+                if (isMoving) {
+                  markerIcon.style.transform = `rotate(${location.bearing}deg)`;
+                } else {
+                  markerIcon.style.transform = 'rotate(0deg)';
+                }
               }
             } else {
               console.log(`Creating new marker for vehicle ${vehicle.id}...`);
