@@ -20,13 +20,14 @@
       height: 48px;
       background-size: contain;
       background-repeat: no-repeat;
+      background-position: 50%; /* Center the background image */
       transform-origin: center; /* Ensure the rotation origin is the center */
     }
   </style>
   <script>
     let map;
     let jobMarkers = [];
-    let vehicleMarkers = [];
+    let vehicleMarkers = {};
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -100,47 +101,64 @@
           'Content-Type': 'application/json'
         },
         success: function(data) {
-          // Remove old vehicle markers
-          vehicleMarkers.forEach(marker => marker.setMap(null));
-          vehicleMarkers = [];
-
           data.vehicles.forEach(vehicleData => {
             const vehicle = vehicleData.vehicle;
             const location = vehicle.current_location;
             const position = new google.maps.LatLng(location.lat, location.lon);
             const isMoving = location.speed !== null && location.speed > 0;
             const markerIconUrl = isMoving ? 'moving-street.svg' : (location.speed === 0 ? 'stationary-street.svg' : 'idle-street.svg');
-            const markerIconContainer = document.createElement('div');
-            markerIconContainer.className = 'fleet-view-marker-icon-container';
-            const markerIcon = document.createElement('div');
-            markerIcon.className = 'fleet-view-marker-icon';
-            markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
-            if (isMoving) {
-              markerIcon.style.transform = `rotate(${location.bearing}deg)`;
-            }
-            markerIconContainer.appendChild(markerIcon);
+            
+            let marker = vehicleMarkers[vehicle.id];
 
-            const marker = new google.maps.marker.AdvancedMarkerElement({
-              map,
-              position,
-              content: markerIconContainer,
-              title: vehicle.number,
-              zIndex: 9999 // Ensure the vehicle marker appears on top
-            });
+            if (marker) {
+              // Update the position of the existing marker
+              marker.setPosition(position);
 
-            let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
-            infoContent += `<br /><strong>Speed:</strong> ${location.speed !== null ? location.speed + ' mph' : 'N/A'}`;
-            infoContent += `<br /><strong>Odometer:</strong> ${location.odometer !== null ? location.odometer.toFixed(1) + ' miles' : 'N/A'}`;
-            infoContent += `<br /><strong>Primary Fuel Remaining:</strong> ${location.fuel_primary_remaining_percentage !== null ? location.fuel_primary_remaining_percentage + '%' : 'N/A'}`;
-            if (vehicle.current_driver) {
-              infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
+              // Update the icon and rotation
+              const markerIconContainer = marker.getContent().querySelector('.fleet-view-marker-icon-container');
+              const markerIcon = markerIconContainer.querySelector('.fleet-view-marker-icon');
+              markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
+              if (isMoving) {
+                markerIcon.style.transform = `rotate(${location.bearing}deg)`;
+              } else {
+                markerIcon.style.transform = 'rotate(0deg)';
+              }
+            } else {
+              // Create a new marker
+              const markerIconContainer = document.createElement('div');
+              markerIconContainer.className = 'fleet-view-marker-icon-container';
+              const markerIcon = document.createElement('div');
+              markerIcon.className = 'fleet-view-marker-icon';
+              markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
+              if (isMoving) {
+                markerIcon.style.transform = `rotate(${location.bearing}deg)`;
+              }
+              markerIconContainer.appendChild(markerIcon);
+
+              marker = new google.maps.marker.AdvancedMarkerElement({
+                map,
+                position,
+                content: markerIconContainer,
+                title: vehicle.number,
+                zIndex: 9999 // Ensure the vehicle marker appears on top
+              });
+
+              let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
+              infoContent += `<br /><strong>Speed:</strong> ${location.speed !== null ? location.speed + ' mph' : 'N/A'}`;
+              infoContent += `<br /><strong>Odometer:</strong> ${location.odometer !== null ? location.odometer.toFixed(1) + ' miles' : 'N/A'}`;
+              infoContent += `<br /><strong>Primary Fuel Remaining:</strong> ${location.fuel_primary_remaining_percentage !== null ? location.fuel_primary_remaining_percentage + '%' : 'N/A'}`;
+              if (vehicle.current_driver) {
+                infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
+              }
+              infoContent += `<br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>`;
+              const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+              marker.addListener('click', function() {
+                infoWindow.open(map, marker);
+              });
+
+              // Store the marker in the dictionary
+              vehicleMarkers[vehicle.id] = marker;
             }
-            infoContent += `<br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>`;
-            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-            marker.addListener('click', function() {
-              infoWindow.open(map, marker);
-            });
-            vehicleMarkers.push(marker);
           });
         },
         error: function(xhr, status, error) {
