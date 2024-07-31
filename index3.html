@@ -199,7 +199,7 @@
               <p><strong>Customer:</strong> ${data.Customer}</p>
               <p><strong>Location:</strong> ${data.LocationName}<br />${data.Address}</p>
               <p><strong>Description:</strong> ${data.Description}</p>
-              <p><strong><a href="https://admin.servicefusion.com/jobs/jobView?id=${data.expand.printable_work_order[0].url.split('=')[1]}" target="_blank">View Job in Service Fusion</a></strong></p>
+              <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
             `;
             marker.info = new google.maps.InfoWindow({ content: infoContent });
             google.maps.event.addListener(marker, 'click', function() {
@@ -213,62 +213,3 @@
         });
     }
 
-    function createVehicleMarkerContent(markerIconUrl, isMoving, bearing) {
-      const markerIconContainer = document.createElement('div');
-      markerIconContainer.className = 'fleet-view-marker-icon-container';
-      const markerIcon = document.createElement('div');
-      markerIcon.className = 'fleet-view-marker-icon';
-      markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
-      if (isMoving) {
-        markerIcon.style.transform = `rotate(${bearing}deg)`;
-      }
-      markerIconContainer.appendChild(markerIcon);
-      return markerIconContainer;
-    }
-
-    function getPin(data) {
-      const statusColors = {
-        'Scheduled': '#6fdb6b',
-        'Dispatched': '#30962d',
-        'On The Way': '#a6d2e3',
-        'Started': '#21586e',
-        'Work Completed': '#e30035',
-        'Parts Review': '#e30035',
-        'Service Review': '#e30035',
-        'Sales Review': '#e30035',
-        'Management Review': '#e30035',
-        'Clerical Review': '#e30035',
-        'Return Required': '#ff7214',
-        'Ready for Redispatch': '#ff7214',
-        'Parts Needed': '#f0e62d',
-        'Waiting for Parts': '#f0e62d',
-        'Ready for Invoicing': '#962c88',
-        'Invoiced': '#962c88',
-        'Invoice Created': '#962c88',
-        'default': '#999999',
-      };
-      const categoryColors = {
-        'On-Site Installation Service': '#03a9f4',
-        'On-Site Reactive Service': '#e30035',
-        'default': '#ab47bc',
-      };
-      const priorityColors = {
-        'High': '#e30035',
-        'Low': '#03a9f4',
-        'default': '#000',
-      };
-      const bgColor = statusColors[data.Status] || statusColors['default'];
-      const glpColor = categoryColors[data.Category] || categoryColors['default'];
-      const brdColor = priorityColors[data.Priority] || categoryColors['default'];
-      return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
-    }
-
-    window.initMap = initMap;
-  </script>
-</head>
-<body>
-  <div id="map"></div>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker" defer></script>
-  <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
-</body>
-</html>
