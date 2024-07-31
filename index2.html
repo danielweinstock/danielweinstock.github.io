@@ -11,6 +11,14 @@
       margin: 0;
       padding: 0;
     }
+    .fleet-view-marker-icon-container {
+      clip-path: circle(18px);
+      z-index: 10;
+    }
+    .fleet-view-marker-icon {
+      width: 48px;
+      height: 48px;
+    }
   </style>
   <script>
     function initMap() {
@@ -78,23 +86,25 @@
             const location = vehicle.current_location;
             const position = new google.maps.LatLng(location.lat, location.lon);
             const isMoving = location.speed !== null && location.speed > 0;
-            const markerColor = isMoving ? '#00FF00' : '#FF6347'; // Green for moving, tomato red for stopped
-            const markerIcon = {
-              path: 'M 0,-12 A 12,12 0 1,1 0,12 A 12,12 0 1,1 0,-12 M 0,-4 L 0,-10 L 5,0 L 0,10 L 0,4 Z', // Circle with an arrow
-              fillColor: markerColor,
-              fillOpacity: 0.8,
-              strokeWeight: 2,
-              strokeColor: '#FFFFFF',
-              scale: 12, // Using the scale size specified
-              rotation: location.bearing // Rotate the arrow based on the bearing
-            };
-            const marker = new google.maps.Marker({
-              position,
+            const markerIconUrl = isMoving ? 'moving-street.svg' : (location.speed === 0 ? 'stationary-street.svg' : 'idle-street.svg');
+            const markerIconContainer = document.createElement('div');
+            markerIconContainer.className = 'fleet-view-marker-icon-container';
+            const markerIcon = document.createElement('div');
+            markerIcon.className = 'fleet-view-marker-icon';
+            markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
+            if (isMoving) {
+              markerIcon.style.transform = `rotate(${location.bearing}deg)`;
+            }
+            markerIconContainer.appendChild(markerIcon);
+
+            const marker = new google.maps.marker.AdvancedMarkerElement({
               map,
+              position,
+              content: markerIconContainer,
               title: vehicle.number,
-              icon: markerIcon,
               zIndex: 9999 // Ensure the vehicle marker appears on top
             });
+
             let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
             infoContent += `<br /><strong>Speed:</strong> ${location.speed !== null ? location.speed + ' mph' : 'N/A'}`;
             infoContent += `<br /><strong>Odometer:</strong> ${location.odometer !== null ? location.odometer + ' miles' : 'N/A'}`;
