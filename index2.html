@@ -121,7 +121,7 @@
               marker.position = position;
 
               // Update the icon and rotation
-              const markerIconContainer = marker.getContent().querySelector('.fleet-view-marker-icon-container');
+              const markerIconContainer = marker.content.querySelector('.fleet-view-marker-icon-container');
               const markerIcon = markerIconContainer.querySelector('.fleet-view-marker-icon');
               markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
               if (isMoving) {
