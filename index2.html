@@ -117,8 +117,8 @@
 
             if (marker) {
               console.log(`Updating marker for vehicle ${vehicle.id}...`);
-              // Update the position of the existing marker
-              marker.setPosition(position);
+              // Update the position of the existing marker using dot notation
+              marker.position = position;
 
               // Update the icon and rotation
               const markerIconContainer = marker.getContent().querySelector('.fleet-view-marker-icon-container');
