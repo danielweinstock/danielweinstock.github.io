@@ -48,7 +48,7 @@
   
   <!-- Load the Google Maps JavaScript API asynchronously -->
   <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&v=weekly&libraries=marker">
   </script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
   <script>
@@ -58,15 +58,19 @@
     let unscheduledJobMarkers = [];
 
     // Initialize and add the map
-    function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
+    async function initMap() {
+      // Use importLibrary to load the maps module
+      const { Map } = await google.maps.importLibrary("maps");
+
+      map = new Map(document.getElementById("map"), {
         zoom: 7,
         center: { lat: 42.182020, lng: -72.515020 },
         mapId: "64c9800e01e9e346", // Updated map ID
         disableDefaultUI: true,
       });
 
-      const trafficLayer = new google.maps.TrafficLayer();
+      const { TrafficLayer } = await google.maps.importLibrary("maps");
+      const trafficLayer = new TrafficLayer();
       const bounds = new google.maps.LatLngBounds();
       const boundsValue = (new URL(location.href)).searchParams.get('show');
       trafficLayer.setMap(map);
@@ -315,6 +319,8 @@
       const brdColor = priorityColors[data.Priority] || categoryColors['default'];
       return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
     }
+
+    initMap(); // Call initMap after the script loads
   </script>
 </body>
 </html>
