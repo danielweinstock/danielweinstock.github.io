@@ -32,8 +32,6 @@
     let vehicleMarkers = {};
     let unscheduledJobMarkers = [];
 
-    const webUserAuthToken = 'N2IwZjYzMjc2ZmZkNWEzYjc5Y2VlMzZjMDZkZDY1NjQ3OTA0NGE5NGE2OGZhMzY3YTE0ZjAzZTc1NzUxNjg1MTc1ODIxZjZmNDFhMmFhNDVhMDg2NGY2Mzg2NWYxZWU3YjJjNWU4NjBjYThjYWU0YjUw';
-
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
@@ -115,72 +113,61 @@
     }
 
     function fetchVehicleData() {
-      // Using Cloudflare proxy server for API calls
-      const apiUrl = 'https://motive-vehicles.daniel-ff2.workers.dev/';
+      // Using Cloudflare worker to proxy API calls
+      const workerApiUrl = 'https://get-motive-details.daniel-ff2.workers.dev/?vehicleId=';
+
       $.ajax({
-        url: apiUrl,
+        url: 'https://motive-vehicles.daniel-ff2.workers.dev/', // Use existing Cloudflare worker for initial data
         method: 'GET',
         success: function(data) {
           data.vehicles.forEach(vehicleData => {
             const vehicle = vehicleData.vehicle;
-            const location = vehicle.current_location;
-            const position = new google.maps.LatLng(location.lat, location.lon);
-            const isMoving = location.speed !== null && location.speed > 0;
-            const markerIconUrl = isMoving ? 'moving-street.svg' : (location.speed === 0 ? 'stationary-street.svg' : 'idle-street.svg');
-            
+            const position = new google.maps.LatLng(vehicle.current_location.lat, vehicle.current_location.lon);
+            const isMoving = vehicle.current_location.speed !== null && vehicle.current_location.speed > 0;
+            const markerIconUrl = isMoving ? 'moving-street.svg' : (vehicle.current_location.speed === 0 ? 'stationary-street.svg' : 'idle-street.svg');
+
             let marker = vehicleMarkers[vehicle.id];
 
             if (marker) {
               // Update the position and content of the existing marker
               marker.position = position;
-              marker.content = createVehicleMarkerContent(markerIconUrl, isMoving, location.bearing);
+              marker.content = createVehicleMarkerContent(markerIconUrl, isMoving, vehicle.current_location.bearing);
             } else {
               // Create a new marker
               marker = new google.maps.marker.AdvancedMarkerElement({
                 map,
                 position,
-                content: createVehicleMarkerContent(markerIconUrl, isMoving, location.bearing),
+                content: createVehicleMarkerContent(markerIconUrl, isMoving, vehicle.current_location.bearing),
                 title: vehicle.number,
                 zIndex: 9999 // Ensure the vehicle marker appears on top
               });
 
-              let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${location.description}`;
-              infoContent += `<br /><strong>Speed:</strong> ${location.speed !== null ? location.speed + ' mph' : 'N/A'}`;
-              infoContent += `<br /><strong>Odometer:</strong> ${location.odometer !== null ? location.odometer.toFixed(1) + ' miles' : 'N/A'}`;
-              infoContent += `<br /><strong>Primary Fuel Remaining:</strong> ${location.fuel_primary_remaining_percentage !== null ? location.fuel_primary_remaining_percentage + '%' : 'N/A'}`;
+              let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${vehicle.current_location.description}`;
+              infoContent += `<br /><strong>Speed:</strong> ${vehicle.current_location.speed !== null ? vehicle.current_location.speed + ' mph' : 'N/A'}`;
+              infoContent += `<br /><strong>Odometer:</strong> ${vehicle.current_location.odometer !== null ? vehicle.current_location.odometer.toFixed(1) + ' miles' : 'N/A'}`;
+              infoContent += `<br /><strong>Primary Fuel Remaining:</strong> ${vehicle.current_location.fuel_primary_remaining_percentage !== null ? vehicle.current_location.fuel_primary_remaining_percentage + '%' : 'N/A'}`;
               if (vehicle.current_driver) {
                 infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
               }
               infoContent += `<br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>`;
-
-              const infoWindow = new google.maps.InfoWindow({ content: infoContent });
               
-              // Add click listener to make the API call when the info window opens
+              // Update info window when clicking the marker
               marker.addListener('click', function() {
-                // Open the info window
-                infoWindow.open(map, marker);
-
-                // Make API call to the follow endpoint
-                fetch(`https://api.keeptruckin.com/api/w3/vehicles/${vehicle.id}/follow`, {
-                  method: 'GET',
-                  headers: {
-                    'X-Api-Key': '81e4c2dd-f33a-4ab7-97db-2d3fea1a19b4',
-                    'Accept': 'application/json',
-                    'X-Web-User-Auth': webUserAuthToken
-                  }
-                })
-                .then(response => response.json())
-                .then(data => {
-                  console.log('Follow API response:', data);
-                  const imageUrl = data.vehicle.image_check.last_image_metadata.front_facing_image_url;
+                // Fetch additional vehicle data from Cloudflare Worker
+                $.getJSON(workerApiUrl + vehicle.id, function(response) {
+                  const imageUrl = response.front_facing_image_url;
+                  const driverImageUrl = response.driver_facing_image_url;
+                  const driverName = response.last_known_driver;
+                  
+                  let imageHtml = '';
                   if (imageUrl) {
-                    // Add the image to the info window content
-                    const imageHtml = `<br /><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Vehicle Image" style="width: 200px; height: auto;"></a>`;
-                    infoWindow.setContent(infoContent + imageHtml);
+                    imageHtml += `<br /><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Front Vehicle Image" style="width: 200px; height: auto;"></a>`;
                   }
-                })
-                .catch(error => {
-                  console.error('Error calling follow API:', error);
+                  if (driverImageUrl) {
+                    imageHtml += `<br /><a href="${driverImageUrl}" target="_blank"><img src="${driverImageUrl}" alt="Driver Facing Image" style="width: 200px; height: auto;"></a>`;
+                  }
+                  infoWindow.setContent(infoContent + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml);
+                  infoWindow.open(map, marker);
                 });
               });
 
