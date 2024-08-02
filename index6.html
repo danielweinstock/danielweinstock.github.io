@@ -96,9 +96,9 @@
               <p>Tech/s Assigned: ${techsAssigned}</p>
               <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></p>
             `;
-            marker.info = new google.maps.InfoWindow({ content: infoContent });
+            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
             google.maps.event.addListener(marker, 'click', function() {
-              marker.info.open(map, marker);
+              infoWindow.open(map, marker);
             });
             jobMarkers.push(marker);
             bounds.extend(myLatlng);
@@ -222,9 +222,9 @@
               <p><strong>Description:</strong> ${data.Description}</p>
               <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
             `;
-            marker.info = new google.maps.InfoWindow({ content: infoContent });
+            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
             google.maps.event.addListener(marker, 'click', function() {
-              marker.info.open(map, marker);
+              infoWindow.open(map, marker);
             });
             unscheduledJobMarkers.push(marker);
           });
