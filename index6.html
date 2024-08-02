@@ -42,12 +42,22 @@
       cursor: pointer;
     }
   </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <!-- Load the Google Maps JavaScript API asynchronously -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker">
+  </script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
   <script>
     let map;
     let jobMarkers = [];
     let vehicleMarkers = {};
     let unscheduledJobMarkers = [];
 
+    // Initialize and add the map
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
@@ -305,15 +315,6 @@
       const brdColor = priorityColors[data.Priority] || categoryColors['default'];
       return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
     }
-
-    window.initMap = initMap;
   </script>
-</head>
-<body>
-  <div id="map"></div>
-  <!-- Load the Google Maps JavaScript API asynchronously -->
-  <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker"></script>
-  <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
 </body>
 </html>
