@@ -150,15 +150,17 @@
                 infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
               }
               infoContent += `<br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>`;
-              
-              // Update info window when clicking the marker
+
+              const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+
+              // Add click listener to make the API call when the info window opens
               marker.addListener('click', function() {
                 // Fetch additional vehicle data from Cloudflare Worker
                 $.getJSON(workerApiUrl + vehicle.id, function(response) {
                   const imageUrl = response.front_facing_image_url;
                   const driverImageUrl = response.driver_facing_image_url;
                   const driverName = response.last_known_driver;
-                  
+
                   let imageHtml = '';
                   if (imageUrl) {
                     imageHtml += `<br /><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Front Vehicle Image" style="width: 200px; height: auto;"></a>`;
@@ -166,7 +168,15 @@
                   if (driverImageUrl) {
                     imageHtml += `<br /><a href="${driverImageUrl}" target="_blank"><img src="${driverImageUrl}" alt="Driver Facing Image" style="width: 200px; height: auto;"></a>`;
                   }
-                  infoWindow.setContent(infoContent + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml);
+                  const updatedContent = infoContent + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml;
+
+                  // Update the info window content and open it
+                  infoWindow.setContent(updatedContent);
+                  infoWindow.open(map, marker);
+                })
+                .fail(function() {
+                  console.log("Error fetching additional vehicle data.");
+                  // Open the info window with available content even if fetching additional data fails
                   infoWindow.open(map, marker);
                 });
               });
