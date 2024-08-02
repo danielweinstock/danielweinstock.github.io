@@ -12,20 +12,21 @@
       padding: 0;
     }
     .fleet-view-marker-icon-container {
+      position: absolute;
       clip-path: circle(18px);
       z-index: 10;
     }
     .fleet-view-marker-icon {
-      width: 36px;
-      height: 36px;
+      width: 36px; /* Reduced width */
+      height: 36px; /* Reduced height */
       background-size: contain;
       background-repeat: no-repeat;
       background-position: 50%; /* Center the background image */
       transform-origin: center; /* Ensure the rotation origin is the center */
     }
     .star-icon {
-      width: 48px;
-      height: 48px;
+      width: 48px; /* Increased width */
+      height: 48px; /* Increased height */
       background-size: contain;
       background-repeat: no-repeat;
     }
@@ -43,6 +44,7 @@
         mapId: "FREEFLOW",
         disableDefaultUI: true,
       });
+
       const trafficLayer = new google.maps.TrafficLayer();
       const bounds = new google.maps.LatLngBounds();
       const boundsValue = (new URL(location.href)).searchParams.get('show');
@@ -71,11 +73,11 @@
         if ((hours > 5 || (hours === 5 && minutes >= 30)) && hours < 22) {
           fetchVehicleData();
         }
-      }, 60000);
+      }, 15000);
     }
 
     function fetchJobData(bounds, boundsValue) {
-      $.getJSON("https://hook.us1.make.com/dpz368etjmklaqqkk9jbvozkxjac08db")
+      $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
         .done(function(data) {
           // Remove old job markers
           jobMarkers.forEach(marker => marker.setMap(null));
@@ -111,18 +113,16 @@
           });
         })
         .fail(function() {
-          alert("Error fetching job data.");
+          console.log("Error fetching job data.");
         });
     }
 
     function fetchVehicleData() {
+      // Using Cloudflare proxy server for API calls
       const apiUrl = 'https://motive-vehicles.daniel-ff2.workers.dev/';
       $.ajax({
         url: apiUrl,
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         success: function(data) {
           data.vehicles.forEach(vehicleData => {
             const vehicle = vehicleData.vehicle;
@@ -166,7 +166,7 @@
           });
         },
         error: function(xhr, status, error) {
-          alert("Error fetching vehicle data.");
+          console.log("Error fetching vehicle data: ", error);
         }
       });
     }
@@ -209,7 +209,7 @@
           });
         })
         .fail(function() {
-          alert("Error fetching unscheduled job data.");
+          console.log("Error fetching unscheduled job data.");
         });
     }
 
@@ -260,7 +260,7 @@
       };
       const bgColor = statusColors[data.Status] || statusColors['default'];
       const glpColor = categoryColors[data.Category] || categoryColors['default'];
-      const brdColor = priorityColors[data.Priority] || priorityColors['default'];
+      const brdColor = priorityColors[data.Priority] || categoryColors['default'];
       return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
     }
 
