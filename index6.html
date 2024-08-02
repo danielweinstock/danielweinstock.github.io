@@ -31,6 +31,7 @@
       line-height: 1.4em;
       padding: 5px;
       width: 250px;
+      overflow-x: hidden; /* Hide horizontal overflow */
     }
     .custom-info-window strong {
       font-size: 14px;
@@ -310,7 +311,9 @@
 </head>
 <body>
   <div id="map"></div>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker" defer></script>
+  <!-- Load the Google Maps JavaScript API asynchronously -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker"></script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
 </body>
 </html>
