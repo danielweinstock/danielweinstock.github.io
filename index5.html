@@ -11,11 +11,6 @@
       margin: 0;
       padding: 0;
     }
-    .fleet-view-marker-icon-container {
-      position: absolute;
-      clip-path: circle(18px);
-      z-index: 10;
-    }
     .fleet-view-marker-icon {
       width: 36px; /* Reduced width */
       height: 36px; /* Reduced height */
@@ -41,7 +36,7 @@
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
         center: { lat: 42.182020, lng: -72.515020 },
-        mapId: "FREEFLOW",
+        mapId: "FREEFLOW2",
         disableDefaultUI: true,
       });
 
@@ -215,7 +210,6 @@
 
     function createVehicleMarkerContent(markerIconUrl, isMoving, bearing) {
       const markerIconContainer = document.createElement('div');
-      markerIconContainer.className = 'fleet-view-marker-icon-container';
       const markerIcon = document.createElement('div');
       markerIcon.className = 'fleet-view-marker-icon';
       markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
