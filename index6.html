@@ -127,7 +127,8 @@
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'Host': 'api.keeptruckin.com',
-          'User-Agent': navigator.userAgent
+          'User-Agent': navigator.userAgent,
+          'Accept-Encoding': 'gzip, deflate, br, zstd'
         },
         success: function(data) {
           data.vehicles.forEach(vehicleData => {
