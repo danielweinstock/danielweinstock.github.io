@@ -47,8 +47,8 @@
   <div id="map"></div>
   
   <!-- Load the Google Maps JavaScript API asynchronously -->
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&v=weekly&libraries=marker">
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&v=weekly&libraries=marker&callback=initMap">
   </script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
   <script>
@@ -60,7 +60,7 @@
     // Initialize and add the map
     async function initMap() {
       // Use importLibrary to load the maps module
-      const { Map } = await google.maps.importLibrary("maps");
+      const { Map, TrafficLayer, LatLng, LatLngBounds, InfoWindow } = await google.maps.importLibrary("maps");
 
       map = new Map(document.getElementById("map"), {
         zoom: 7,
@@ -69,9 +69,8 @@
         disableDefaultUI: true,
       });
 
-      const { TrafficLayer } = await google.maps.importLibrary("maps");
       const trafficLayer = new TrafficLayer();
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new LatLngBounds();
       const boundsValue = (new URL(location.href)).searchParams.get('show');
       trafficLayer.setMap(map);
 
@@ -319,8 +318,6 @@
       const brdColor = priorityColors[data.Priority] || categoryColors['default'];
       return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
     }
-
-    initMap(); // Call initMap after the script loads
   </script>
 </body>
 </html>
