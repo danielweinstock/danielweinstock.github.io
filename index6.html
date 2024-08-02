@@ -12,7 +12,7 @@
       padding: 0;
     }
     .fleet-view-marker-icon-container {
-      position: absolute; /* Ensure position is absolute for map icons */
+      position: absolute;
       clip-path: circle(18px);
       z-index: 10;
     }
@@ -29,19 +29,6 @@
       height: 48px; /* Increased height */
       background-size: contain;
       background-repeat: no-repeat;
-    }
-    /* Example label style */
-    .fleet-view-marker-label {
-      position: absolute;
-      font-family: Inter, sans-serif;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 16px;
-      color: #fff;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 4px 8px;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.2);
     }
   </style>
   <script>
@@ -131,12 +118,16 @@
     }
 
     function fetchVehicleData() {
-      const apiUrl = 'https://motive-vehicles.daniel-ff2.workers.dev/';
+      const apiUrl = 'https://api.keeptruckin.com/v2/vehicle_locations?vehicle_ids=1713181&per_page=25&page_no=1';
       $.ajax({
         url: apiUrl,
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
+          'X-Api-Key': '81e4c2dd-f33a-4ab7-97db-2d3fea1a19b4',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Host': 'api.keeptruckin.com',
+          'User-Agent': navigator.userAgent
         },
         success: function(data) {
           data.vehicles.forEach(vehicleData => {
@@ -181,7 +172,7 @@
           });
         },
         error: function(xhr, status, error) {
-          console.log("Error fetching vehicle data.");
+          console.log("Error fetching vehicle data: ", error);
         }
       });
     }
