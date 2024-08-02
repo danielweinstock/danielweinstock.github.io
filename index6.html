@@ -25,6 +25,21 @@
       background-size: contain;
       background-repeat: no-repeat;
     }
+    .custom-info-window {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.4em;
+      padding: 5px;
+      width: 250px;
+    }
+    .custom-info-window strong {
+      font-size: 14px;
+    }
+    .custom-info-window img {
+      margin-top: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
   </style>
   <script>
     let map;
@@ -36,7 +51,7 @@
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
         center: { lat: 42.182020, lng: -72.515020 },
-        mapId: "FREEFLOW",
+        mapId: "64c9800e01e9e346", // Updated map ID
         disableDefaultUI: true,
       });
 
@@ -90,11 +105,13 @@
 
             const techsAssigned = data.Techs ? data.Techs.map(tech => `${tech.first_name} ${tech.last_name}`).join(', ') : '';
             const infoContent = `
-              <small><em>${data.Category}</em></small><br /><br />
-              <strong>Job ${data.JobID} / Work Order ${data.PONumber}</strong>
-              <p><strong>${data.Customer}<br />${data.LocationName}</strong><br />${data.Address}</p>
-              <p>Tech/s Assigned: ${techsAssigned}</p>
-              <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></p>
+              <div class="custom-info-window">
+                <small><em>${data.Category}</em></small><br />
+                <strong>Job ${data.JobID} / Work Order ${data.PONumber}</strong>
+                <p><strong>${data.Customer}<br />${data.LocationName}</strong><br />${data.Address}</p>
+                <p>Tech/s Assigned: ${techsAssigned}</p>
+                <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
+              </div>
             `;
             const infoWindow = new google.maps.InfoWindow({ content: infoContent });
             google.maps.event.addListener(marker, 'click', function() {
@@ -142,14 +159,16 @@
                 zIndex: 9999 // Ensure the vehicle marker appears on top
               });
 
-              let infoContent = `<strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${vehicle.current_location.description}`;
-              infoContent += `<br /><strong>Speed:</strong> ${vehicle.current_location.speed !== null ? vehicle.current_location.speed + ' mph' : 'N/A'}`;
-              infoContent += `<br /><strong>Odometer:</strong> ${vehicle.current_location.odometer !== null ? vehicle.current_location.odometer.toFixed(1) + ' miles' : 'N/A'}`;
-              infoContent += `<br /><strong>Primary Fuel Remaining:</strong> ${vehicle.current_location.fuel_primary_remaining_percentage !== null ? vehicle.current_location.fuel_primary_remaining_percentage + '%' : 'N/A'}`;
-              if (vehicle.current_driver) {
-                infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
-              }
-              infoContent += `<br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>`;
+              let infoContent = `
+                <div class="custom-info-window">
+                  <strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${vehicle.current_location.description}
+                  <br /><strong>Speed:</strong> ${vehicle.current_location.speed !== null ? vehicle.current_location.speed + ' mph' : 'N/A'}
+                  <br /><strong>Odometer:</strong> ${vehicle.current_location.odometer !== null ? vehicle.current_location.odometer.toFixed(1) + ' miles' : 'N/A'}
+                  <br /><strong>Primary Fuel Remaining:</strong> ${vehicle.current_location.fuel_primary_remaining_percentage !== null ? vehicle.current_location.fuel_primary_remaining_percentage + '%' : 'N/A'}
+                  ${vehicle.current_driver ? `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}` : ''}
+                  <br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>
+                </div>
+              `;
 
               const infoWindow = new google.maps.InfoWindow({ content: infoContent });
 
@@ -168,7 +187,7 @@
                   if (driverImageUrl) {
                     imageHtml += `<br /><a href="${driverImageUrl}" target="_blank"><img src="${driverImageUrl}" alt="Driver Facing Image" style="width: 200px; height: auto;"></a>`;
                   }
-                  const updatedContent = infoContent + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml;
+                  const updatedContent = `<div class="custom-info-window">` + infoContent + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml + `</div>`;
 
                   // Update the info window content and open it
                   infoWindow.setContent(updatedContent);
@@ -214,13 +233,15 @@
             });
 
             const infoContent = `
-              <small><em>${data.Category}</em></small><br /><br />
-              <strong>Job ${data.JobID}</strong>
-              <p><strong>Parent Customer:</strong> ${data.ParentCustomer}</p>
-              <p><strong>Customer:</strong> ${data.Customer}</p>
-              <p><strong>Location:</strong> ${data.LocationName}<br />${data.Address}</p>
-              <p><strong>Description:</strong> ${data.Description}</p>
-              <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
+              <div class="custom-info-window">
+                <small><em>${data.Category}</em></small><br />
+                <strong>Job ${data.JobID}</strong>
+                <p><strong>Parent Customer:</strong> ${data.ParentCustomer}</p>
+                <p><strong>Customer:</strong> ${data.Customer}</p>
+                <p><strong>Location:</strong> ${data.LocationName}<br />${data.Address}</p>
+                <p><strong>Description:</strong> ${data.Description}</p>
+                <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
+              </div>
             `;
             const infoWindow = new google.maps.InfoWindow({ content: infoContent });
             google.maps.event.addListener(marker, 'click', function() {
