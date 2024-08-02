@@ -11,11 +11,6 @@
       margin: 0;
       padding: 0;
     }
-    .fleet-view-marker-icon-container {
-      position: absolute;
-      clip-path: circle(18px);
-      z-index: 10;
-    }
     .fleet-view-marker-icon {
       width: 36px; /* Reduced width */
       height: 36px; /* Reduced height */
@@ -36,6 +31,8 @@
     let jobMarkers = [];
     let vehicleMarkers = {};
     let unscheduledJobMarkers = [];
+
+    const webUserAuthToken = 'N2IwZjYzMjc2ZmZkNWEzYjc5Y2VlMzZjMDZkZDY1NjQ3OTA0NGE5NGE2OGZhMzY3YTE0ZjAzZTc1NzUxNjg1MTc1ODIxZjZmNDFhMmFhNDVhMDg2NGY2Mzg2NWYxZWU3YjJjNWU4NjBjYThjYWU0YjUw';
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -118,18 +115,11 @@
     }
 
     function fetchVehicleData() {
-      const apiUrl = 'https://api.keeptruckin.com/v2/vehicle_locations?vehicle_ids=1713181&per_page=25&page_no=1';
+      // Using Cloudflare proxy server for API calls
+      const apiUrl = 'https://motive-vehicles.daniel-ff2.workers.dev/';
       $.ajax({
         url: apiUrl,
         method: 'GET',
-        headers: {
-          'X-Api-Key': '81e4c2dd-f33a-4ab7-97db-2d3fea1a19b4',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Host': 'api.keeptruckin.com',
-          'User-Agent': navigator.userAgent,
-          'Accept-Encoding': 'gzip, deflate, br, zstd'
-        },
         success: function(data) {
           data.vehicles.forEach(vehicleData => {
             const vehicle = vehicleData.vehicle;
@@ -162,9 +152,36 @@
                 infoContent += `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}`;
               }
               infoContent += `<br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>`;
+
               const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+              
+              // Add click listener to make the API call when the info window opens
               marker.addListener('click', function() {
+                // Open the info window
                 infoWindow.open(map, marker);
+
+                // Make API call to the follow endpoint
+                fetch(`https://api.keeptruckin.com/api/w3/vehicles/${vehicle.id}/follow`, {
+                  method: 'GET',
+                  headers: {
+                    'X-Api-Key': '81e4c2dd-f33a-4ab7-97db-2d3fea1a19b4',
+                    'Accept': 'application/json',
+                    'X-Web-User-Auth': webUserAuthToken
+                  }
+                })
+                .then(response => response.json())
+                .then(data => {
+                  console.log('Follow API response:', data);
+                  const imageUrl = data.vehicle.image_check.last_image_metadata.front_facing_image_url;
+                  if (imageUrl) {
+                    // Add the image to the info window content
+                    const imageHtml = `<br /><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Vehicle Image" style="width: 200px; height: auto;"></a>`;
+                    infoWindow.setContent(infoContent + imageHtml);
+                  }
+                })
+                .catch(error => {
+                  console.error('Error calling follow API:', error);
+                });
               });
 
               // Store the marker in the dictionary
@@ -222,7 +239,6 @@
 
     function createVehicleMarkerContent(markerIconUrl, isMoving, bearing) {
       const markerIconContainer = document.createElement('div');
-      markerIconContainer.className = 'fleet-view-marker-icon-container';
       const markerIcon = document.createElement('div');
       markerIcon.className = 'fleet-view-marker-icon';
       markerIcon.style.backgroundImage = `url(${markerIconUrl})`;
