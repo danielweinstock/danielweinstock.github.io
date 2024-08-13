@@ -2,29 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* Ensure the body and html take up the full page height */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 100%;
         }
-        
+
         /* The wrapper div takes up the full page */
         .full-page-wrapper {
             width: 100%;
             height: 100vh; /* 100% of the viewport height */
+            display: flex;
             justify-content: center; /* Center content horizontally */
             align-items: center; /* Center content vertically */
             overflow: hidden; /* Hide any overflow */
-            display: block;
+        }
+
+        /* Ensure the embedded content also fills the space */
+        .embedded-content {
+            width: 100%;
+            height: 100%;
+            border: none; /* Removes any borders around the content */
         }
     </style>
 </head>
 <body>
     <div class="full-page-wrapper">
-      <div id="customgpt_chat"></div> <script src="https://cdn.customgpt.ai/js/embed.js" defer="" div_id="customgpt_chat" p_id="38804" p_key="c1bdfc110977f87c7e490767f8188982"></script>
+       <div id="customgpt_chat"class="embedded-content"></div> <script src="https://cdn.customgpt.ai/js/embed.js" defer="" div_id="customgpt_chat" p_id="38804" p_key="c1bdfc110977f87c7e490767f8188982"></script>
     </div>
 </body>
 </html>
