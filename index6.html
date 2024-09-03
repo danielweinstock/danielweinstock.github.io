@@ -158,12 +158,19 @@
 
             if (marker) {
               marker.position = position;
-              marker.content = markerIconContainer;
+
+              marker.content = document.createElement('div');
+              marker.content.appendChild(markerIconContainer);
+
+              const labelContainer = document.createElement('div');
+              labelContainer.className = 'label-container';
+              labelContainer.innerText = `${vehicle.number} ${vehicle.current_driver ? vehicle.current_driver.first_name : ''}`;
+              marker.content.appendChild(labelContainer);
+
             } else {
               const markerContent = document.createElement('div');
               markerContent.appendChild(markerIconContainer);
 
-              // Create and append the label below the marker
               const labelContainer = document.createElement('div');
               labelContainer.className = 'label-container';
               labelContainer.innerText = `${vehicle.number} ${vehicle.current_driver ? vehicle.current_driver.first_name : ''}`;
@@ -322,6 +329,7 @@
 </head>
 <body>
   <div id="map"></div>
+  <!-- Load the Google Maps JavaScript API asynchronously -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker"></script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
