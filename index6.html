@@ -19,11 +19,17 @@
       background-position: 50%; /* Center the background image */
       transform-origin: center; /* Ensure the rotation origin is the center */
     }
-    .star-icon {
-      width: 48px; /* Increased width */
-      height: 48px; /* Increased height */
-      background-size: contain;
-      background-repeat: no-repeat;
+    .label-container {
+      position: absolute;
+      transform: translate(-50%, 8px); /* Center the label below the marker */
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: #000;
+      font-family: Arial, sans-serif;
+      white-space: nowrap;
+      z-index: 10000; /* Ensure it appears above other elements */
     }
     .custom-info-window {
       font-family: Arial, sans-serif;
@@ -46,15 +52,11 @@
 <body>
   <div id="map"></div>
   
-  <!-- Load the Google Maps JavaScript API synchronously -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&v=weekly&libraries=marker&callback=initMap">
-  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&v=weekly&libraries=marker&callback=initMap"></script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
   <script>
     let map;
-    let jobMarkers = [];
     let vehicleMarkers = {};
-    let unscheduledJobMarkers = [];
 
     // Initialize and add the map
     function initMap() {
@@ -65,84 +67,14 @@
         disableDefaultUI: true,
       });
 
-      const trafficLayer = new google.maps.TrafficLayer();
-      const bounds = new google.maps.LatLngBounds();
-      const boundsValue = (new URL(location.href)).searchParams.get('show');
-      trafficLayer.setMap(map);
-
-      fetchJobData(bounds, boundsValue);
       fetchVehicleData();
-      fetchUnscheduledJobData();
 
-      // Update job markers every 10 minutes (600000 milliseconds) between 5:30 AM and 10 PM
-      setInterval(() => {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        if ((hours > 5 || (hours === 5 && minutes >= 30)) && hours < 22) {
-          fetchJobData(bounds, boundsValue);
-          fetchUnscheduledJobData();
-        }
-      }, 600000);
-
-      // Update vehicle positions every 15 seconds (15000 milliseconds) between 5:30 AM and 10 PM
-      setInterval(() => {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        if ((hours > 5 || (hours === 5 && minutes >= 30)) && hours < 22) {
-          fetchVehicleData();
-        }
-      }, 15000);
-    }
-
-    function fetchJobData(bounds, boundsValue) {
-      $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
-        .done(function(data) {
-          // Remove old job markers
-          jobMarkers.forEach(marker => marker.setMap(null));
-          jobMarkers = [];
-
-          data.forEach(function(data) {
-            const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
-            const myPin = getPin(data);
-            const marker = new google.maps.marker.AdvancedMarkerElement({
-              map,
-              position: myLatlng,
-              title: `${data.JobID} | ${data.LocationName} | ${data.Status}`,
-              content: myPin.element,
-            });
-
-            const techsAssigned = data.Techs ? data.Techs.map(tech => `${tech.first_name} ${tech.last_name}`).join(', ') : '';
-            const infoContent = `
-              <div class="custom-info-window">
-                <small><em>${data.Category}</em></small><br />
-                <strong>Job ${data.JobID} / Work Order ${data.PONumber}</strong>
-                <p><strong>${data.Customer}<br />${data.LocationName}</strong><br />${data.Address}</p>
-                <p>Tech/s Assigned: ${techsAssigned}</p>
-                <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
-              </div>
-            `;
-            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-            google.maps.event.addListener(marker, 'click', function() {
-              infoWindow.open(map, marker);
-            });
-            jobMarkers.push(marker);
-            bounds.extend(myLatlng);
-            if (boundsValue === 'all') {
-              map.fitBounds(bounds);
-            }
-          });
-        })
-        .fail(function() {
-          console.log("Error fetching job data.");
-        });
+      // Update vehicle positions every 15 seconds (15000 milliseconds)
+      setInterval(fetchVehicleData, 15000);
     }
 
     function fetchVehicleData() {
       // Using Cloudflare worker to proxy API calls
-      const workerApiUrl = 'https://get-motive-details.daniel-ff2.workers.dev/?vehicleId=';
-
       $.ajax({
         url: 'https://motive-vehicles.daniel-ff2.workers.dev/', // Use existing Cloudflare worker for initial data
         method: 'GET',
@@ -169,46 +101,11 @@
                 zIndex: 9999 // Ensure the vehicle marker appears on top
               });
 
-              let infoContent = `
-                <div class="custom-info-window">
-                  <strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${vehicle.current_location.description}
-                  <br /><strong>Speed:</strong> ${vehicle.current_location.speed !== null ? vehicle.current_location.speed + ' mph' : 'N/A'}
-                  <br /><strong>Odometer:</strong> ${vehicle.current_location.odometer !== null ? vehicle.current_location.odometer.toFixed(1) + ' miles' : 'N/A'}
-                  <br /><strong>Primary Fuel Remaining:</strong> ${vehicle.current_location.fuel_primary_remaining_percentage !== null ? vehicle.current_location.fuel_primary_remaining_percentage + '%' : 'N/A'}
-                  ${vehicle.current_driver ? `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}` : ''}
-                  <br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>
-                </div>
-              `;
-
-              const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-
-              // Add click listener to make the API call when the info window opens
-              marker.addListener('click', function() {
-                // Fetch additional vehicle data from Cloudflare Worker
-                $.getJSON(workerApiUrl + vehicle.id, function(response) {
-                  const imageUrl = response.front_facing_image_url;
-                  const driverImageUrl = response.driver_facing_image_url;
-                  const driverName = response.last_known_driver;
-
-                  let imageHtml = '';
-                  if (imageUrl) {
-                    imageHtml += `<br /><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Front Vehicle Image" style="width: 200px; height: auto;"></a>`;
-                  }
-                  if (driverImageUrl) {
-                    imageHtml += `<br /><a href="${driverImageUrl}" target="_blank"><img src="${driverImageUrl}" alt="Driver Facing Image" style="width: 200px; height: auto;"></a>`;
-                  }
-                  const updatedContent = `<div class="custom-info-window">` + infoContent + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml + `</div>`;
-
-                  // Update the info window content and open it
-                  infoWindow.setContent(updatedContent);
-                  infoWindow.open(map, marker);
-                })
-                .fail(function() {
-                  console.log("Error fetching additional vehicle data.");
-                  // Open the info window with available content even if fetching additional data fails
-                  infoWindow.open(map, marker);
-                });
-              });
+              // Add the label below the marker
+              const labelContainer = document.createElement('div');
+              labelContainer.className = 'label-container';
+              labelContainer.innerText = `${vehicle.number} ${vehicle.current_driver ? vehicle.current_driver.first_name : ''}`;
+              marker.getContent().appendChild(labelContainer);
 
               // Store the marker in the dictionary
               vehicleMarkers[vehicle.id] = marker;
@@ -219,50 +116,6 @@
           console.log("Error fetching vehicle data: ", error);
         }
       });
-    }
-
-    function fetchUnscheduledJobData() {
-      $.getJSON("https://hook.us1.make.com/yy2w2a4cw2rcevdmjx0d9hvw4bcefko4")
-        .done(function(data) {
-          // Remove old unscheduled job markers
-          unscheduledJobMarkers.forEach(marker => marker.setMap(null));
-          unscheduledJobMarkers = [];
-
-          data.forEach(function(data) {
-            const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
-            const markerIconUrl = data.Priority === 'High' ? 'red-star.svg' : 'yellow-star.svg';
-            const markerIconContainer = document.createElement('div');
-            markerIconContainer.className = 'star-icon';
-            markerIconContainer.style.backgroundImage = `url(${markerIconUrl})`;
-
-            const marker = new google.maps.marker.AdvancedMarkerElement({
-              map,
-              position: myLatlng,
-              title: `${data.JobID} | ${data.LocationName} | ${data.Status}`,
-              content: markerIconContainer,
-            });
-
-            const infoContent = `
-              <div class="custom-info-window">
-                <small><em>${data.Category}</em></small><br />
-                <strong>Job ${data.JobID}</strong>
-                <p><strong>Parent Customer:</strong> ${data.ParentCustomer}</p>
-                <p><strong>Customer:</strong> ${data.Customer}</p>
-                <p><strong>Location:</strong> ${data.LocationName}<br />${data.Address}</p>
-                <p><strong>Description:</strong> ${data.Description}</p>
-                <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
-              </div>
-            `;
-            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-            google.maps.event.addListener(marker, 'click', function() {
-              infoWindow.open(map, marker);
-            });
-            unscheduledJobMarkers.push(marker);
-          });
-        })
-        .fail(function() {
-          console.log("Error fetching unscheduled job data.");
-        });
     }
 
     function createVehicleMarkerContent(markerIconUrl, isMoving, bearing) {
@@ -276,45 +129,6 @@
       markerIconContainer.appendChild(markerIcon);
       return markerIconContainer;
     }
-
-    function getPin(data) {
-      const statusColors = {
-        'Scheduled': '#6fdb6b',
-        'Dispatched': '#30962d',
-        'On The Way': '#a6d2e3',
-        'Started': '#21586e',
-        'Work Completed': '#e30035',
-        'Parts Review': '#e30035',
-        'Service Review': '#e30035',
-        'Sales Review': '#e30035',
-        'Management Review': '#e30035',
-        'Clerical Review': '#e30035',
-        'Return Required': '#ff7214',
-        'Ready for Redispatch': '#ff7214',
-        'Parts Needed': '#f0e62d',
-        'Waiting for Parts': '#f0e62d',
-        'Ready for Invoicing': '#962c88',
-        'Invoiced': '#962c88',
-        'Invoice Created': '#962c88',
-        'Redispatched': '#31f5de',
-        'default': '#999999',
-      };
-      const categoryColors = {
-        'On-Site Installation Service': '#03a9f4',
-        'On-Site Reactive Service': '#e30035',
-        'default': '#ab47bc',
-      };
-      const priorityColors = {
-        'High': '#e30035',
-        'Low': '#03a9f4',
-        'default': '#000',
-      };
-      const bgColor = statusColors[data.Status] || statusColors['default'];
-      const glpColor = categoryColors[data.Category] || categoryColors['default'];
-      const brdColor = priorityColors[data.Priority] || categoryColors['default'];
-      return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
-    }
-
   </script>
 </body>
 </html>
