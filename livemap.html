@@ -14,20 +14,33 @@
     }
 
     .header {
-      background-color: #333;
+      background-color: #1ea449;
       color: white;
-      padding: 10px;
+      padding: 10px 20px;
       text-align: center;
       position: fixed;
       width: 100%;
       top: 0;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       z-index: 1000;
+    }
+
+    .header img {
+      height: 100px;
+    }
+
+    .clock {
+      font-size: 2em;
+      font-family: sans-serif;
     }
 
     .container {
       display: flex;
       height: 100%;
-      padding-top: 50px; /* Adjust based on header height */
+      padding-top: 160px; /* Adjust based on header height */
     }
 
     .main-content {
@@ -101,7 +114,8 @@
 </head>
 <body>
   <div class="header">
-    <h1>Live Map</h1>
+    <img src="/freeflowbev-logo-full-white-trans.png" alt="FreeFlowBev Logo">
+    <div class="clock" id="clock"></div>
   </div>
   <div class="container">
     <div class="main-content">
@@ -376,6 +390,21 @@
           const brdColor = priorityColors[data.Priority] || categoryColors['default'];
           return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
         }
+
+        function updateClock() {
+          const now = new Date();
+          let hours = now.getHours();
+          const minutes = now.getMinutes();
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+          const timeStr = hours + ':' + minutesStr + ' ' + ampm;
+          document.getElementById('clock').innerText = timeStr;
+        }
+
+        setInterval(updateClock, 60000); // Update clock every minute
+        updateClock(); // Initial call to display clock immediately
 
         window.initMap = initMap;
       </script>
