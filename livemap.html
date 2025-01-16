@@ -22,11 +22,7 @@
       position: fixed;
       width: calc(100% - 40px); /* Adjust width to prevent overflow */
       top: 0;
-<<<<<<< HEAD
       height: 90px;
-=======
-      height: 125px;
->>>>>>> cba9532049b7c26777fb08dc794efa252f1c9db1
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -45,11 +41,7 @@
     .container {
       display: flex;
       height: 100%;
-<<<<<<< HEAD
       padding-top: 90px; /* Adjust based on header height */
-=======
-      padding-top: 125px; /* Adjust based on header height */
->>>>>>> cba9532049b7c26777fb08dc794efa252f1c9db1
     }
 
     .main-content {
@@ -119,6 +111,34 @@
       white-space: nowrap;
       z-index: 10000;
     }
+
+    .job-item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+
+    .job-item a {
+      color: #1ea449;
+      text-decoration: none;
+    }
+
+    .job-item a:hover {
+      text-decoration: underline;
+    }
+
+    .job-item .job-details {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .job-item .job-details div {
+      flex: 1 1 50%;
+      margin-bottom: 5px;
+    }
+
+    .job-item .job-details div.full-width {
+      flex: 1 1 100%;
+    }
   </style>
 </head>
 <body>
@@ -179,6 +199,12 @@
               jobMarkers.forEach(marker => marker.setMap(null));
               jobMarkers = [];
 
+              // Sort jobs by ScheduledStart time ascending
+              data.sort((a, b) => new Date(a.ScheduledStart) - new Date(b.ScheduledStart));
+
+              const rightFrame = document.querySelector('.right-frame');
+              rightFrame.innerHTML = ''; // Clear previous job data
+
               data.forEach(function(data) {
                 const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
                 const myPin = getPin(data);
@@ -199,19 +225,33 @@
                     <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
                   </div>
                 `;
-                const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-                google.maps.event.addListener(marker, 'click', function() {
-                  infoWindow.open(map, marker);
-                });
+
+                // Add job data to the right frame
+                const jobItem = document.createElement('div');
+                jobItem.className = 'job-item';
+                jobItem.innerHTML = `
+                  <div class="job-details">
+                    <div><strong>JobID:</strong> <a href="${data.SFURL}" target="_blank">${data.JobID}</a></div>
+                    <div><strong>ParentCustomer:</strong> ${data.ParentCustomer || ''}</div>
+                    <div><strong>Customer:</strong> ${data.Customer}</div>
+                    <div><strong>Address:</strong> ${data.Address}</div>
+                    <div><strong>Category:</strong> ${data.Category}</div>
+                    <div><strong>Status:</strong> ${data.Status}</div>
+                    <div><strong>PONumber:</strong> ${data.PONumber}</div>
+                    <div><strong>ScheduledStart:</strong> ${new Date(data.ScheduledStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                    <div><strong>ScheduledEnd:</strong> ${new Date(data.ScheduledEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                    <div class="full-width"><strong>Techs Assigned:</strong> ${techsAssigned}</div>
+                  </div>
+                `;
+                rightFrame.appendChild(jobItem);
+
                 jobMarkers.push(marker);
                 bounds.extend(myLatlng);
-                if (boundsValue === 'all') {
-                  map.fitBounds(bounds);
-                }
               });
-            })
-            .fail(function() {
-              console.log("Error fetching job data.");
+
+              if (boundsValue === 'all') {
+                map.fitBounds(bounds);
+              }
             });
         }
 
