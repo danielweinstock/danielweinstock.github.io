@@ -11,6 +11,7 @@
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
+      overflow-x: hidden; /* Prevent horizontal scrolling */
     }
 
     .header {
@@ -19,9 +20,13 @@
       padding: 10px 20px;
       text-align: center;
       position: fixed;
-      width: 100%;
+      width: calc(100% - 40px); /* Adjust width to prevent overflow */
       top: 0;
+<<<<<<< HEAD
+      height: 90px;
+=======
       height: 125px;
+>>>>>>> cba9532049b7c26777fb08dc794efa252f1c9db1
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -29,7 +34,7 @@
     }
 
     .header img {
-      height: 100px;
+      height: 70px;
     }
 
     .clock {
@@ -40,7 +45,11 @@
     .container {
       display: flex;
       height: 100%;
+<<<<<<< HEAD
+      padding-top: 90px; /* Adjust based on header height */
+=======
       padding-top: 125px; /* Adjust based on header height */
+>>>>>>> cba9532049b7c26777fb08dc794efa252f1c9db1
     }
 
     .main-content {
