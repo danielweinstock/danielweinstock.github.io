@@ -34,12 +34,26 @@
       background: #eee;
       padding: 10px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
     }
     .map-header button {
       padding: 5px 10px;
       font-size: 12px;
+    }
+    /* Clock box styling */
+    .clock-box {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px 8px;
+      margin-right: 10px;
+      font-size: 16px;
+      display: inline-block;
+    }
+    .clock-box .ampm {
+      font-size: 0.75em;
+      vertical-align: super;
     }
     /* Map container fills remaining space */
     .map-container {
@@ -106,9 +120,9 @@
 
     // Default centers and zoom levels
     const leftDefault = { lat: 29.842052, lng: -95.439373 }; // Houston, TX
-    const rightDefault = { lat: 42.9956, lng: -71.4548 };      // Right map center remains unchanged
-    const leftZoom = 9;   // Updated left map zoom
-    const rightZoom = 7;  // Updated right map zoom
+    const rightDefault = { lat: 42.9956, lng: -71.4548 };      // Right map center
+    const leftZoom = 9;   // Left map zoom
+    const rightZoom = 7;  // Right map zoom
 
     // Initialize both maps and start fetching data
     function initMap() {
@@ -497,6 +511,47 @@
     }
 
     window.initMap = initMap;
+
+    // Clock update function for the two timezones
+    function updateClocks() {
+      const now = new Date();
+      // Houston (Central Time)
+      const houstonTime = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZone: 'America/Chicago'
+      }).format(now);
+      let houstonParts = houstonTime.split(" ");
+      if (houstonParts.length >= 2) {
+        let timePart = houstonParts.slice(0, houstonParts.length - 1).join(" ");
+        let ampmPart = houstonParts[houstonParts.length - 1];
+        document.getElementById("clock-houston").innerHTML = timePart + ' <span class="ampm">' + ampmPart + '</span>';
+      } else {
+        document.getElementById("clock-houston").innerHTML = houstonTime;
+      }
+      
+      // Northeast (Eastern Time)
+      const northeastTime = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZone: 'America/New_York'
+      }).format(now);
+      let northeastParts = northeastTime.split(" ");
+      if (northeastParts.length >= 2) {
+        let timePartNE = northeastParts.slice(0, northeastParts.length - 1).join(" ");
+        let ampmPartNE = northeastParts[northeastParts.length - 1];
+        document.getElementById("clock-northeast").innerHTML = timePartNE + ' <span class="ampm">' + ampmPartNE + '</span>';
+      } else {
+        document.getElementById("clock-northeast").innerHTML = northeastTime;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      updateClocks();
+      setInterval(updateClocks, 1000);
+    });
   </script>
 </head>
 <body>
@@ -504,6 +559,7 @@
     <!-- Left panel: Freeflow Houston, TX -->
     <div id="left-panel">
       <div class="map-header">
+        <div class="clock-box" id="clock-houston"></div>
         <span>Freeflow Houston, TX</span>
         <button onclick="resetLeftMap()">Reset</button>
       </div>
@@ -512,6 +568,7 @@
     <!-- Right panel: Freeflow Northeast -->
     <div id="right-panel">
       <div class="map-header">
+        <div class="clock-box" id="clock-northeast"></div>
         <span>Freeflow Northeast</span>
         <button onclick="resetRightMap()">Reset</button>
       </div>
