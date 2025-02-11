@@ -20,9 +20,11 @@
       display: flex;
       flex-direction: column;
     }
+    /* Left panel now has a 10px white border to separate the maps */
     #left-panel {
       width: 30%;
-      border-right: 1px solid #ccc;
+      box-sizing: border-box;
+      border-right: 10px solid white;
     }
     #right-panel {
       width: 70%;
@@ -105,8 +107,8 @@
     // Default centers and zoom levels
     const leftDefault = { lat: 29.842052, lng: -95.439373 }; // Houston, TX
     const rightDefault = { lat: 42.9620253, lng: -72.4423102 }; // Updated center for right map
-    const leftZoom = 10;  // New left map zoom
-    const rightZoom = 9;  // New right map zoom
+    const leftZoom = 10;  // Left map zoom
+    const rightZoom = 9;  // Right map zoom
 
     // Initialize both maps and start fetching data
     function initMap() {
