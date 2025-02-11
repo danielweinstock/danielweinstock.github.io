@@ -1,204 +1,161 @@
 <!doctype html>
-<!--
- @license
- Copyright 2019 Google LLC. All Rights Reserved.
- SPDX-License-Identifier: Apache-2.0
--->
 <html>
-  <head>
-    <title>Freeflow Job Viewer</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-	<style>
-/**
- * @license
- * Copyright 2019 Google LLC. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-/* 
- * Always set the map height explicitly to define the size of the div element
- * that contains the map. 
- */
-#map {
-  height: 100%;
-}
+<head>
+  <title>Freeflow Dual Job Viewer</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .map-container {
+      display: flex;
+      flex-direction: column;
+    }
+    .left-map {
+      width: 30%;
+    }
+    .right-map {
+      width: 70%;
+    }
+    .map-title {
+      background: #333;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .map-title button {
+      background: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+    .map-title button:hover {
+      background: #ddd;
+    }
+    .map {
+      flex: 1;
+      width: 100%;
+    }
+    .divider {
+      width: 10px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="map-container left-map">
+      <div class="map-title">Freeflow Houston, TX <button onclick="resetMap('houston')">Reset</button></div>
+      <div id="houston-map" class="map"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="map-container right-map">
+      <div class="map-title">Freeflow Northeast <button onclick="resetMap('northeast')">Reset</button></div>
+      <div id="northeast-map" class="map"></div>
+    </div>
+  </div>
+  
+  <script>
+    let houstonMap, northeastMap, jobData = [], vehicleData = [], unscheduledJobData = [];
 
-/* 
- * Optional: Makes the sample page fill the window. 
- */
-html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+    function initMaps() {
+      const houstonCenter = { lat: 29.842052, lng: -95.439373 };
+      const northeastCenter = { lat: 42.182020, lng: -72.515020 };
 
-</style>
-<script>
-/**
- * @license
- * Copyright 2019 Google LLC. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-function initMap() {
-  const map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 7,
-    center: { lat: 42.182020, lng: -72.515020 },
-    mapId: "FREEFLOW",
-	disableDefaultUI: true,
-  });
-  const trafficLayer = new google.maps.TrafficLayer();
-	const bounds = new google.maps.LatLngBounds();
-// Get the value of 'show' parameter from querystring
+      houstonMap = new google.maps.Map(document.getElementById("houston-map"), {
+        zoom: 7,
+        center: houstonCenter,
+        disableDefaultUI: false,
+      });
 
-	const boundsValue = (new URL(location.href)).searchParams.get('show');
+      northeastMap = new google.maps.Map(document.getElementById("northeast-map"), {
+        zoom: 7,
+        center: northeastCenter,
+        disableDefaultUI: false,
+      });
 
-  trafficLayer.setMap(map);
+      fetchAllData();
+    }
 
-  // Get the Json file data
-        $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p", function(data) {
+    function fetchAllData() {
+      fetchJobData();
+      fetchVehicleData();
+      fetchUnscheduledJobData();
+    }
 
-          // Loop through the data
-          $.each(data, function(key, data) {
+    function fetchJobData() {
+      fetch("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
+        .then(response => response.json())
+        .then(data => {
+          jobData = data;
+          addMarkersToMap(houstonMap, jobData, "job");
+          addMarkersToMap(northeastMap, jobData, "job");
+        })
+        .catch(error => console.error("Error fetching job data:", error));
+    }
 
-            const myLatlng = new google.maps.LatLng(data.Lat, data.Lng); // set position
-	    const myPin = getPin(data);
+    function fetchVehicleData() {
+      fetch("https://motive-vehicles.daniel-ff2.workers.dev/")
+        .then(response => response.json())
+        .then(data => {
+          vehicleData = data.vehicles;
+          addMarkersToMap(houstonMap, vehicleData, "vehicle");
+          addMarkersToMap(northeastMap, vehicleData, "vehicle");
+        })
+        .catch(error => console.error("Error fetching vehicle data:", error));
+    }
 
-            // Add marker to map
-            const marker = new google.maps.marker.AdvancedMarkerElement({
-              map,
-              position: myLatlng,
-              title: data.JobID + ' | ' + data.LocationName + ' | ' + data.Status,
-	      content: myPin.element,
-            });
+    function fetchUnscheduledJobData() {
+      fetch("https://hook.us1.make.com/yy2w2a4cw2rcevdmjx0d9hvw4bcefko4")
+        .then(response => response.json())
+        .then(data => {
+          unscheduledJobData = data;
+          addMarkersToMap(houstonMap, unscheduledJobData, "unscheduled");
+          addMarkersToMap(northeastMap, unscheduledJobData, "unscheduled");
+        })
+        .catch(error => console.error("Error fetching unscheduled job data:", error));
+    }
 
-            // Set info window content
+    function addMarkersToMap(map, data, type) {
+      data.forEach(item => {
+        let position = { lat: item.Lat || item.current_location.lat, lng: item.Lng || item.current_location.lon };
+        let title = type === "job" ? `Job ${item.JobID} - ${item.LocationName}` :
+                    type === "vehicle" ? `Vehicle ${item.vehicle.number}` :
+                    `Unscheduled Job ${item.JobID}`;
 
-	    const techsAssigned = data.Techs ? data.Techs.map(tech => `${tech.first_name} ${tech.last_name}`).join(', ') : '';
-		  
-            let infoContent = '<small><em>' + data.Category + '</em></small><br /><br /><strong>Job ' + data.JobID + ' / Work Order ' + data.PONumber +'</strong>';
-                infoContent+= '<p><strong>' + data.Customer + '<br />' + data.LocationName + '</strong><br />' + data.Address + '</p>';
-		infoContent+= '<p>Tech/s Assigned: ' + techsAssigned + '</p>';
-		infoContent+= '<p><strong><a href="' + data.SFURL + '" target="_blank">View Job in Service Fusion</a></p>';
-
-
-            // Add info window
-            marker.info = new google.maps.InfoWindow({
-              content: infoContent
-            });
-
-            // Add listener for info window
-            google.maps.event.addListener(marker, 'click', function() {
-              marker.info.open(map, marker);
-            });
-
-            // Add marker location to loc var
-		
-
-		  
-            //var loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
-
-            // extend bounds with loc
-                bounds.extend(myLatlng);
-
-		  if(boundsValue == 'all'){
-			map.fitBounds(bounds);
-		  }
-
-          });
-
+        const marker = new google.maps.Marker({
+          position,
+          map,
+          title
         });
+      });
+    }
 
-
-
-
-
-	
-}
-
-function getPin(data){
-	let bgColor;
-	let glpColor;
-	let brdColor;
-	switch(data.Status){
-		case 'Scheduled':
-			bgColor = '#6fdb6b';
-			break;
-		case 'Dispatched':
-			bgColor = '#30962d';
-			break;
-		case 'On The Way':
-			bgColor = '#a6d2e3';
-			break;
-		case 'Started':
-			bgColor = '#21586e';
-			break;
-		case 'Work Completed': case 'Parts Review': case 'Service Review': case 'Sales Review': case 'Management Review': case 'Clerical Review':
-			bgColor = '#e30035';
-			break;
-		case 'Return Required': case 'Ready for Redispatch':
-			bgColor = '#ff7214';
-			break;
-		case 'Parts Needed': case 'Waiting for Parts':
-			bgColor = '#f0e62d';
-			break;
-		case 'Ready for Invoicing': case 'Invoiced': case 'Invoice Created':
-			bgColor = '#962c88';
-			break;
-		default:
-			bgColor = '#999999';
-			break;
-	}
-	switch(data.Category){
-		case 'On-Site Installation Service':
-			glpColor = '#03a9f4';
-			break;
-		case 'On-Site Reactive Service':
-			glpColor = '#e30035';
-			break;
-		default:
-			glpColor = '#ab47bc';
-			break;
-	}
-
-	switch(data.Priority){
-		case 'High':
-			brdColor = '#e30035';
-			break;
-		case 'Low':
-			brdColor = '#03a9f4';
-			break;
-		default:
-			brdColor = '#000';
-			break;
-	}
-		
-		
-
-
-	
-	return new google.maps.marker.PinElement({background: bgColor,glyphColor: glpColor,borderColor: brdColor,scale:1.4});
-	
-}
-
-	
-window.initMap = initMap;
-
-</script>
-
-
-    <!-- jsFiddle will insert css and js -->
-  </head>
-  <body>
-    <div id="map"></div>
-
-    <!-- 
-      The `defer` attribute causes the script to execute after the full HTML
-      document has been parsed. For non-blocking uses, avoiding race conditions,
-      and consistent behavior across browsers, consider loading using Promises. See
-      https://developers.google.com/maps/documentation/javascript/load-maps-js-api
-      for more information.
-      -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker" defer></script>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
-  </body>
+    function resetMap(target) {
+      if (target === 'houston') {
+        houstonMap.setCenter({ lat: 29.842052, lng: -95.439373 });
+        houstonMap.setZoom(7);
+      } else {
+        northeastMap.setCenter({ lat: 42.182020, lng: -72.515020 });
+        northeastMap.setZoom(7);
+      }
+    }
+  </script>
+  
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMaps"></script>
+</body>
 </html>
