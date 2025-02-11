@@ -102,22 +102,23 @@
     let unscheduledJobMarkersRight = [];
     let leftBounds, rightBounds;
 
-    // Default centers and zoom level
+    // Default centers and zoom levels
     const leftDefault = { lat: 29.842052, lng: -95.439373 }; // Houston, TX
-    const rightDefault = { lat: 42.182020, lng: -72.515020 }; // Freeflow Northeast
-    const defaultZoom = 7;
+    const rightDefault = { lat: 42.9620253, lng: -72.4423102 }; // Updated center for right map
+    const leftZoom = 10;  // New left map zoom
+    const rightZoom = 9;  // New right map zoom
 
     // Initialize both maps and start fetching data
     function initMap() {
       // Create the left and right maps in their respective divs.
       leftMap = new google.maps.Map(document.getElementById("left-map"), {
-        zoom: defaultZoom,
+        zoom: leftZoom,
         center: leftDefault,
         mapId: "64c9800e01e9e346",
         disableDefaultUI: true,
       });
       rightMap = new google.maps.Map(document.getElementById("right-map"), {
-        zoom: defaultZoom,
+        zoom: rightZoom,
         center: rightDefault,
         mapId: "64c9800e01e9e346",
         disableDefaultUI: true,
@@ -486,11 +487,11 @@
     // Reset functions for each map.
     function resetLeftMap() {
       leftMap.setCenter(leftDefault);
-      leftMap.setZoom(defaultZoom);
+      leftMap.setZoom(leftZoom);
     }
     function resetRightMap() {
       rightMap.setCenter(rightDefault);
-      rightMap.setZoom(defaultZoom);
+      rightMap.setZoom(rightZoom);
     }
 
     window.initMap = initMap;
