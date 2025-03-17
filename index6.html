@@ -40,6 +40,7 @@
     .map-header button {
       padding: 5px 10px;
       font-size: 12px;
+      margin-left: 5px;
     }
     /* Clock box styling */
     .clock-box {
@@ -119,6 +120,10 @@
     let unscheduledJobMarkersRight = [];
     let leftBounds, rightBounds;
 
+    // Global variables to track expansion state
+    let leftExpanded = false;
+    let rightExpanded = false;
+
     // Default centers and zoom levels
     const leftDefault = { lat: 29.842052, lng: -95.439373 }; // Houston, TX
     const rightDefault = { lat: 42.9956, lng: -71.4548 };      // Right map center
@@ -174,6 +179,46 @@
           fetchVehicleData();
         }
       }, 15000);
+    }
+
+    // Toggle expansion for the left panel (Houston)
+    function toggleLeftPanel() {
+      if (!leftExpanded) {
+        // If right panel is expanded, restore it first.
+        if (rightExpanded) {
+          toggleRightPanel();
+        }
+        document.getElementById("left-panel").style.width = "100%";
+        document.getElementById("right-panel").style.display = "none";
+        document.getElementById("expand-left-btn").innerText = "Restore";
+        leftExpanded = true;
+      } else {
+        // Restore side-by-side view.
+        document.getElementById("left-panel").style.width = "40%";
+        document.getElementById("right-panel").style.display = "block";
+        document.getElementById("expand-left-btn").innerText = "Expand";
+        leftExpanded = false;
+      }
+    }
+
+    // Toggle expansion for the right panel (Northeast)
+    function toggleRightPanel() {
+      if (!rightExpanded) {
+        // If left panel is expanded, restore it first.
+        if (leftExpanded) {
+          toggleLeftPanel();
+        }
+        document.getElementById("right-panel").style.width = "100%";
+        document.getElementById("left-panel").style.display = "none";
+        document.getElementById("expand-right-btn").innerText = "Restore";
+        rightExpanded = true;
+      } else {
+        // Restore side-by-side view.
+        document.getElementById("right-panel").style.width = "60%";
+        document.getElementById("left-panel").style.display = "block";
+        document.getElementById("expand-right-btn").innerText = "Expand";
+        rightExpanded = false;
+      }
     }
 
     // Fetch job data and create markers on both maps.
@@ -562,7 +607,10 @@
       <div class="map-header">
         <div class="clock-box" id="clock-houston"></div>
         <span>Freeflow Houston, TX</span>
-        <button onclick="resetLeftMap()">Reset</button>
+        <div>
+          <button onclick="resetLeftMap()">Reset</button>
+          <button id="expand-left-btn" onclick="toggleLeftPanel()">Expand</button>
+        </div>
       </div>
       <div id="left-map" class="map-container"></div>
     </div>
@@ -571,7 +619,10 @@
       <div class="map-header">
         <div class="clock-box" id="clock-northeast"></div>
         <span>Freeflow Northeast</span>
-        <button onclick="resetRightMap()">Reset</button>
+        <div>
+          <button onclick="resetRightMap()">Reset</button>
+          <button id="expand-right-btn" onclick="toggleRightPanel()">Expand</button>
+        </div>
       </div>
       <div id="right-map" class="map-container"></div>
     </div>
