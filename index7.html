@@ -1,27 +1,82 @@
 <!doctype html>
 <html>
 <head>
-  <title>Freeflow Job Viewer</title>
+  <title>Freeflow Job Viewer – Dual Maps</title>
   <style>
-    #map {
-      height: 100%;
-    }
+    /* Ensure full height */
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
+      font-family: Arial, sans-serif;
     }
+    /* Flex container for two maps */
+    #container {
+      display: flex;
+      height: 100%;
+    }
+    /* Left panel takes 40% width; right panel takes 60% */
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Left panel now has a 10px border (matching header background) to separate the maps */
+    #left-panel {
+      width: 40%;
+      box-sizing: border-box;
+      border-right: 10px solid #eee;
+    }
+    #right-panel {
+      width: 60%;
+    }
+    /* Header above each map */
+    .map-header {
+      background: #eee;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .map-header button {
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-left: 5px;
+    }
+    /* Clock box styling */
+    .clock-box {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px 8px;
+      margin-right: 10px;
+      font-size: 16px;
+      display: inline-block;
+    }
+    /* Updated AM/PM styling: same size and on the same plane as the time */
+    .clock-box .ampm {
+      font-size: 1em;
+      vertical-align: baseline;
+    }
+    /* Map container fills remaining space */
+    .map-container {
+      flex: 1;
+    }
+    /* Make sure our map divs fill their containers */
+    #left-map, #right-map {
+      height: 100%;
+    }
+    /* --- The original styles --- */
     .fleet-view-marker-icon {
-      width: 36px; /* Reduced width */
-      height: 36px; /* Reduced height */
+      width: 36px;
+      height: 36px;
       background-size: contain;
       background-repeat: no-repeat;
-      background-position: 50%; /* Center the background image */
-      transform-origin: center; /* Ensure the rotation origin is the center */
+      background-position: 50%;
+      transform-origin: center;
     }
     .star-icon {
-      width: 48px; /* Increased width */
-      height: 48px; /* Increased height */
+      width: 48px;
+      height: 48px;
       background-size: contain;
       background-repeat: no-repeat;
     }
@@ -31,7 +86,7 @@
       line-height: 1.4em;
       padding: 5px;
       width: 250px;
-      overflow-x: hidden; /* Hide horizontal overflow */
+      overflow-x: hidden;
     }
     .custom-info-window strong {
       font-size: 14px;
@@ -41,42 +96,81 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    .label-container {
+      position: absolute;
+      transform: translate(-50%, 8px);
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: #000;
+      font-family: Arial, sans-serif;
+      white-space: nowrap;
+      z-index: 10000;
+    }
   </style>
   <script>
-    let map;
-    let jobMarkers = [];
-    let vehicleMarkers = {};
-    let unscheduledJobMarkers = [];
+    // Global map variables and marker storage for each map
+    let leftMap, rightMap;
+    let jobMarkersLeft = [];
+    let jobMarkersRight = [];
+    let vehicleMarkersLeft = {};
+    let vehicleMarkersRight = {};
+    let unscheduledJobMarkersLeft = [];
+    let unscheduledJobMarkersRight = [];
+    let leftBounds, rightBounds;
 
+    // Global variables to track expansion state
+    let leftExpanded = false;
+    let rightExpanded = false;
+
+    // Default centers and zoom levels
+    const leftDefault = { lat: 29.842052, lng: -95.439373 }; // Houston, TX
+    const rightDefault = { lat: 42.9956, lng: -71.4548 };      // Right map center
+    const leftZoom = 9;   // Left map zoom
+    const rightZoom = 7;  // Right map zoom
+
+    // Initialize both maps and start fetching data
     function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 7,
-        center: { lat: 42.182020, lng: -72.515020 },
-        mapId: "64c9800e01e9e346", // Updated map ID
+      // Create the left and right maps in their respective divs.
+      leftMap = new google.maps.Map(document.getElementById("left-map"), {
+        zoom: leftZoom,
+        center: leftDefault,
+        mapId: "64c9800e01e9e346",
+        disableDefaultUI: true,
+      });
+      rightMap = new google.maps.Map(document.getElementById("right-map"), {
+        zoom: rightZoom,
+        center: rightDefault,
+        mapId: "64c9800e01e9e346",
         disableDefaultUI: true,
       });
 
-      const trafficLayer = new google.maps.TrafficLayer();
-      const bounds = new google.maps.LatLngBounds();
-      const boundsValue = (new URL(location.href)).searchParams.get('show');
-      trafficLayer.setMap(map);
+      // Add traffic layers to both maps.
+      new google.maps.TrafficLayer().setMap(leftMap);
+      new google.maps.TrafficLayer().setMap(rightMap);
 
-      fetchJobData(bounds, boundsValue);
+      // Initialize bounds (used when ?show=all)
+      leftBounds = new google.maps.LatLngBounds();
+      rightBounds = new google.maps.LatLngBounds();
+
+      // Fetch data for markers
+      fetchJobData();
       fetchVehicleData();
       fetchUnscheduledJobData();
 
-      // Update job markers every 10 minutes (600000 milliseconds) between 5:30 AM and 10 PM
+      // Refresh job and unscheduled job data every 10 minutes (600000 ms) during working hours.
       setInterval(() => {
         const now = new Date();
         const hours = now.getHours();
         const minutes = now.getMinutes();
         if ((hours > 5 || (hours === 5 && minutes >= 30)) && hours < 22) {
-          fetchJobData(bounds, boundsValue);
+          fetchJobData();
           fetchUnscheduledJobData();
         }
       }, 600000);
 
-      // Update vehicle positions every 15 seconds (15000 milliseconds) between 5:30 AM and 10 PM
+      // Refresh vehicle data every 15 seconds during working hours.
       setInterval(() => {
         const now = new Date();
         const hours = now.getHours();
@@ -87,55 +181,182 @@
       }, 15000);
     }
 
-    function fetchJobData(bounds, boundsValue) {
+    // Toggle expansion for the left panel (Houston)
+    function toggleLeftPanel() {
+      if (!leftExpanded) {
+        // If right panel is expanded, restore it first.
+        if (rightExpanded) {
+          toggleRightPanel();
+        }
+        document.getElementById("left-panel").style.width = "100%";
+        document.getElementById("right-panel").style.display = "none";
+        document.getElementById("expand-left-btn").innerText = "Restore";
+        leftExpanded = true;
+      } else {
+        // Restore side-by-side view.
+        document.getElementById("left-panel").style.width = "40%";
+        document.getElementById("right-panel").style.display = "block";
+        document.getElementById("expand-left-btn").innerText = "Expand";
+        leftExpanded = false;
+      }
+    }
+
+    // Toggle expansion for the right panel (Northeast)
+    function toggleRightPanel() {
+      if (!rightExpanded) {
+        // If left panel is expanded, restore it first.
+        if (leftExpanded) {
+          toggleLeftPanel();
+        }
+        document.getElementById("right-panel").style.width = "100%";
+        document.getElementById("left-panel").style.display = "none";
+        document.getElementById("expand-right-btn").innerText = "Restore";
+        rightExpanded = true;
+      } else {
+        // Restore side-by-side view.
+        document.getElementById("right-panel").style.width = "60%";
+        document.getElementById("left-panel").style.display = "block";
+        document.getElementById("expand-right-btn").innerText = "Expand";
+        rightExpanded = false;
+      }
+    }
+
+    // Fetch job data and create markers on both maps.
+    function fetchJobData() {
+      // Determine if URL parameter "show=all" is present.
+      const boundsValue = (new URL(location.href)).searchParams.get('show');
       $.getJSON("https://hook.us1.make.com/0ovk9hp1ev25shv9nampbn1ulhgscj4p")
         .done(function(data) {
-          // Remove old job markers
-          jobMarkers.forEach(marker => marker.setMap(null));
-          jobMarkers = [];
+          // Clear any existing job markers.
+          jobMarkersLeft.forEach(marker => marker.setMap(null));
+          jobMarkersRight.forEach(marker => marker.setMap(null));
+          jobMarkersLeft = [];
+          jobMarkersRight = [];
 
-          data.forEach(function(data) {
-            const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
-            const myPin = getPin(data);
-            const marker = new google.maps.marker.AdvancedMarkerElement({
-              map,
+          // For each job in the fetched data...
+          data.forEach(function(item) {
+            const myLatlng = new google.maps.LatLng(item.Lat, item.Lng);
+            const myPin = getPin(item);
+
+            // Create marker for the left map.
+            const markerLeft = new google.maps.marker.AdvancedMarkerElement({
+              map: leftMap,
               position: myLatlng,
-              title: `${data.JobID} | ${data.LocationName} | ${data.Status}`,
-              content: myPin.element,
+              title: `${item.JobID} | ${item.LocationName} | ${item.Status}`,
+              content: myPin.element, // use the element from PinElement
+            });
+            // Create marker for the right map (clone the element so it can be used independently).
+            const markerRight = new google.maps.marker.AdvancedMarkerElement({
+              map: rightMap,
+              position: myLatlng,
+              title: `${item.JobID} | ${item.LocationName} | ${item.Status}`,
+              content: myPin.element.cloneNode(true),
             });
 
-            const techsAssigned = data.Techs ? data.Techs.map(tech => `${tech.first_name} ${tech.last_name}`).join(', ') : '';
+            // Build an info window for the job.
+            const techsAssigned = item.Techs ? item.Techs.map(tech => `${tech.first_name} ${tech.last_name}`).join(', ') : '';
             const infoContent = `
               <div class="custom-info-window">
-                <small><em>${data.Category}</em></small><br />
-                <strong>Job ${data.JobID} / Work Order ${data.PONumber}</strong>
-                <p><strong>${data.Customer}<br />${data.LocationName}</strong><br />${data.Address}</p>
+                <small><em>${item.Category}</em></small><br />
+                <strong>Job ${item.JobID} / Work Order ${item.PONumber}</strong>
+                <p><strong>${item.Customer}<br />${item.LocationName}</strong><br />${item.Address}</p>
                 <p>Tech/s Assigned: ${techsAssigned}</p>
-                <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
+                <p><strong><a href="${item.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
               </div>
             `;
-            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-            google.maps.event.addListener(marker, 'click', function() {
-              infoWindow.open(map, marker);
+            const infoWindowLeft = new google.maps.InfoWindow({ content: infoContent });
+            const infoWindowRight = new google.maps.InfoWindow({ content: infoContent });
+            markerLeft.addListener('click', function() {
+              infoWindowLeft.open(leftMap, markerLeft);
             });
-            jobMarkers.push(marker);
-            bounds.extend(myLatlng);
+            markerRight.addListener('click', function() {
+              infoWindowRight.open(rightMap, markerRight);
+            });
+
+            jobMarkersLeft.push(markerLeft);
+            jobMarkersRight.push(markerRight);
+
+            // If URL parameter "show=all", extend each map’s bounds.
             if (boundsValue === 'all') {
-              map.fitBounds(bounds);
+              leftBounds.extend(myLatlng);
+              rightBounds.extend(myLatlng);
             }
           });
+          if (boundsValue === 'all') {
+            leftMap.fitBounds(leftBounds);
+            rightMap.fitBounds(rightBounds);
+          }
         })
         .fail(function() {
           console.log("Error fetching job data.");
         });
     }
 
-    function fetchVehicleData() {
-      // Using Cloudflare worker to proxy API calls
-      const workerApiUrl = 'https://get-motive-details.daniel-ff2.workers.dev/?vehicleId=';
+    // Fetch unscheduled job data and create markers on both maps.
+    function fetchUnscheduledJobData() {
+      $.getJSON("https://hook.us1.make.com/yy2w2a4cw2rcevdmjx0d9hvw4bcefko4")
+        .done(function(data) {
+          unscheduledJobMarkersLeft.forEach(marker => marker.setMap(null));
+          unscheduledJobMarkersRight.forEach(marker => marker.setMap(null));
+          unscheduledJobMarkersLeft = [];
+          unscheduledJobMarkersRight = [];
 
+          data.forEach(function(item) {
+            const myLatlng = new google.maps.LatLng(item.Lat, item.Lng);
+            const markerIconUrl = item.Priority === 'High' ? 'red-star.svg' : 'yellow-star.svg';
+            const markerIconContainer = document.createElement('div');
+            markerIconContainer.className = 'star-icon';
+            markerIconContainer.style.backgroundImage = `url(${markerIconUrl})`;
+
+            // Left map marker.
+            const markerLeft = new google.maps.marker.AdvancedMarkerElement({
+              map: leftMap,
+              position: myLatlng,
+              title: `${item.JobID} | ${item.LocationName} | ${item.Status}`,
+              content: markerIconContainer,
+            });
+            // Right map marker (with a cloned DOM element).
+            const markerRight = new google.maps.marker.AdvancedMarkerElement({
+              map: rightMap,
+              position: myLatlng,
+              title: `${item.JobID} | ${item.LocationName} | ${item.Status}`,
+              content: markerIconContainer.cloneNode(true),
+            });
+
+            const infoContent = `
+              <div class="custom-info-window">
+                <small><em>${item.Category}</em></small><br />
+                <strong>Job ${item.JobID}</strong>
+                <p><strong>Parent Customer:</strong> ${item.ParentCustomer}</p>
+                <p><strong>Customer:</strong> ${item.Customer}</p>
+                <p><strong>Location:</strong> ${item.LocationName}<br />${item.Address}</p>
+                <p><strong>Description:</strong> ${item.Description}</p>
+                <p><strong><a href="${item.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
+              </div>
+            `;
+            const infoWindowLeft = new google.maps.InfoWindow({ content: infoContent });
+            const infoWindowRight = new google.maps.InfoWindow({ content: infoContent });
+            markerLeft.addListener('click', function() {
+              infoWindowLeft.open(leftMap, markerLeft);
+            });
+            markerRight.addListener('click', function() {
+              infoWindowRight.open(rightMap, markerRight);
+            });
+
+            unscheduledJobMarkersLeft.push(markerLeft);
+            unscheduledJobMarkersRight.push(markerRight);
+          });
+        })
+        .fail(function() {
+          console.log("Error fetching unscheduled job data.");
+        });
+    }
+
+    // Fetch vehicle data and create/update markers on both maps.
+    function fetchVehicleData() {
+      const workerApiUrl = 'https://get-motive-details.daniel-ff2.workers.dev/?vehicleId=';
       $.ajax({
-        url: 'https://motive-vehicles.daniel-ff2.workers.dev/', // Use existing Cloudflare worker for initial data
+        url: 'https://motive-vehicles.daniel-ff2.workers.dev/',
         method: 'GET',
         success: function(data) {
           data.vehicles.forEach(vehicleData => {
@@ -144,23 +365,34 @@
             const isMoving = vehicle.current_location.speed !== null && vehicle.current_location.speed > 0;
             const markerIconUrl = isMoving ? 'moving-street.svg' : (vehicle.current_location.speed === 0 ? 'stationary-street.svg' : 'idle-street.svg');
 
-            let marker = vehicleMarkers[vehicle.id];
-
-            if (marker) {
-              // Update the position and content of the existing marker
-              marker.position = position;
-              marker.content = createVehicleMarkerContent(markerIconUrl, isMoving, vehicle.current_location.bearing);
+            // LEFT MAP
+            let markerLeft = vehicleMarkersLeft[vehicle.id];
+            const markerIconContainerLeft = createVehicleMarkerContent(markerIconUrl, isMoving, vehicle.current_location.bearing);
+            if (markerLeft) {
+              // Update existing marker.
+              markerLeft.position = position;
+              markerLeft.content = document.createElement('div');
+              markerLeft.content.appendChild(markerIconContainerLeft);
+              const labelContainerLeft = document.createElement('div');
+              labelContainerLeft.className = 'label-container';
+              labelContainerLeft.innerText = `${vehicle.number} ${vehicle.current_driver ? vehicle.current_driver.first_name : ''}`;
+              markerLeft.content.appendChild(labelContainerLeft);
             } else {
-              // Create a new marker
-              marker = new google.maps.marker.AdvancedMarkerElement({
-                map,
+              // Create new marker.
+              const markerContentLeft = document.createElement('div');
+              markerContentLeft.appendChild(markerIconContainerLeft);
+              const labelContainerLeft = document.createElement('div');
+              labelContainerLeft.className = 'label-container';
+              labelContainerLeft.innerText = `${vehicle.number} ${vehicle.current_driver ? vehicle.current_driver.first_name : ''}`;
+              markerContentLeft.appendChild(labelContainerLeft);
+              markerLeft = new google.maps.marker.AdvancedMarkerElement({
+                map: leftMap,
                 position,
-                content: createVehicleMarkerContent(markerIconUrl, isMoving, vehicle.current_location.bearing),
+                content: markerContentLeft,
                 title: vehicle.number,
-                zIndex: 9999 // Ensure the vehicle marker appears on top
+                zIndex: 9999
               });
-
-              let infoContent = `
+              let infoContentLeft = `
                 <div class="custom-info-window">
                   <strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${vehicle.current_location.description}
                   <br /><strong>Speed:</strong> ${vehicle.current_location.speed !== null ? vehicle.current_location.speed + ' mph' : 'N/A'}
@@ -170,17 +402,12 @@
                   <br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>
                 </div>
               `;
-
-              const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-
-              // Add click listener to make the API call when the info window opens
-              marker.addListener('click', function() {
-                // Fetch additional vehicle data from Cloudflare Worker
+              const infoWindowLeft = new google.maps.InfoWindow({ content: infoContentLeft });
+              markerLeft.addListener('click', function() {
                 $.getJSON(workerApiUrl + vehicle.id, function(response) {
                   const imageUrl = response.front_facing_image_url;
                   const driverImageUrl = response.driver_facing_image_url;
                   const driverName = response.last_known_driver;
-
                   let imageHtml = '';
                   if (imageUrl) {
                     imageHtml += `<br /><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Front Vehicle Image" style="width: 200px; height: auto;"></a>`;
@@ -188,21 +415,76 @@
                   if (driverImageUrl) {
                     imageHtml += `<br /><a href="${driverImageUrl}" target="_blank"><img src="${driverImageUrl}" alt="Driver Facing Image" style="width: 200px; height: auto;"></a>`;
                   }
-                  const updatedContent = `<div class="custom-info-window">` + infoContent + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml + `</div>`;
-
-                  // Update the info window content and open it
-                  infoWindow.setContent(updatedContent);
-                  infoWindow.open(map, marker);
+                  const updatedContent = `<div class="custom-info-window">` + infoContentLeft + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml + `</div>`;
+                  infoWindowLeft.setContent(updatedContent);
+                  infoWindowLeft.open(leftMap, markerLeft);
                 })
                 .fail(function() {
                   console.log("Error fetching additional vehicle data.");
-                  // Open the info window with available content even if fetching additional data fails
-                  infoWindow.open(map, marker);
+                  infoWindowLeft.open(leftMap, markerLeft);
                 });
               });
+              vehicleMarkersLeft[vehicle.id] = markerLeft;
+            }
 
-              // Store the marker in the dictionary
-              vehicleMarkers[vehicle.id] = marker;
+            // RIGHT MAP
+            let markerRight = vehicleMarkersRight[vehicle.id];
+            const markerIconContainerRight = createVehicleMarkerContent(markerIconUrl, isMoving, vehicle.current_location.bearing);
+            if (markerRight) {
+              markerRight.position = position;
+              markerRight.content = document.createElement('div');
+              markerRight.content.appendChild(markerIconContainerRight);
+              const labelContainerRight = document.createElement('div');
+              labelContainerRight.className = 'label-container';
+              labelContainerRight.innerText = `${vehicle.number} ${vehicle.current_driver ? vehicle.current_driver.first_name : ''}`;
+              markerRight.content.appendChild(labelContainerRight);
+            } else {
+              const markerContentRight = document.createElement('div');
+              markerContentRight.appendChild(markerIconContainerRight);
+              const labelContainerRight = document.createElement('div');
+              labelContainerRight.className = 'label-container';
+              labelContainerRight.innerText = `${vehicle.number} ${vehicle.current_driver ? vehicle.current_driver.first_name : ''}`;
+              markerContentRight.appendChild(labelContainerRight);
+              markerRight = new google.maps.marker.AdvancedMarkerElement({
+                map: rightMap,
+                position,
+                content: markerContentRight,
+                title: vehicle.number,
+                zIndex: 9999
+              });
+              let infoContentRight = `
+                <div class="custom-info-window">
+                  <strong>Vehicle ${vehicle.number}</strong><br />${vehicle.make} ${vehicle.model} (${vehicle.year})<br />${vehicle.current_location.description}
+                  <br /><strong>Speed:</strong> ${vehicle.current_location.speed !== null ? vehicle.current_location.speed + ' mph' : 'N/A'}
+                  <br /><strong>Odometer:</strong> ${vehicle.current_location.odometer !== null ? vehicle.current_location.odometer.toFixed(1) + ' miles' : 'N/A'}
+                  <br /><strong>Primary Fuel Remaining:</strong> ${vehicle.current_location.fuel_primary_remaining_percentage !== null ? vehicle.current_location.fuel_primary_remaining_percentage + '%' : 'N/A'}
+                  ${vehicle.current_driver ? `<br /><strong>Driver:</strong> ${vehicle.current_driver.first_name} ${vehicle.current_driver.last_name}` : ''}
+                  <br /><strong><a href="https://app.gomotive.com/en-US/#/fleetview/map/vehicle/${vehicle.id}-null-null/${vehicle.id}/live" target="_blank">View Vehicle on Motive</a></strong>
+                </div>
+              `;
+              const infoWindowRight = new google.maps.InfoWindow({ content: infoContentRight });
+              markerRight.addListener('click', function() {
+                $.getJSON(workerApiUrl + vehicle.id, function(response) {
+                  const imageUrl = response.front_facing_image_url;
+                  const driverImageUrl = response.driver_facing_image_url;
+                  const driverName = response.last_known_driver;
+                  let imageHtml = '';
+                  if (imageUrl) {
+                    imageHtml += `<br /><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" alt="Front Vehicle Image" style="width: 200px; height: auto;"></a>`;
+                  }
+                  if (driverImageUrl) {
+                    imageHtml += `<br /><a href="${driverImageUrl}" target="_blank"><img src="${driverImageUrl}" alt="Driver Facing Image" style="width: 200px; height: auto;"></a>`;
+                  }
+                  const updatedContent = `<div class="custom-info-window">` + infoContentRight + `<br /><strong>Last Known Driver:</strong> ${driverName}` + imageHtml + `</div>`;
+                  infoWindowRight.setContent(updatedContent);
+                  infoWindowRight.open(rightMap, markerRight);
+                })
+                .fail(function() {
+                  console.log("Error fetching additional vehicle data.");
+                  infoWindowRight.open(rightMap, markerRight);
+                });
+              });
+              vehicleMarkersRight[vehicle.id] = markerRight;
             }
           });
         },
@@ -212,50 +494,7 @@
       });
     }
 
-    function fetchUnscheduledJobData() {
-      $.getJSON("https://hook.us1.make.com/yy2w2a4cw2rcevdmjx0d9hvw4bcefko4")
-        .done(function(data) {
-          // Remove old unscheduled job markers
-          unscheduledJobMarkers.forEach(marker => marker.setMap(null));
-          unscheduledJobMarkers = [];
-
-          data.forEach(function(data) {
-            const myLatlng = new google.maps.LatLng(data.Lat, data.Lng);
-            const markerIconUrl = data.Priority === 'High' ? 'red-star.svg' : 'yellow-star.svg';
-            const markerIconContainer = document.createElement('div');
-            markerIconContainer.className = 'star-icon';
-            markerIconContainer.style.backgroundImage = `url(${markerIconUrl})`;
-
-            const marker = new google.maps.marker.AdvancedMarkerElement({
-              map,
-              position: myLatlng,
-              title: `${data.JobID} | ${data.LocationName} | ${data.Status}`,
-              content: markerIconContainer,
-            });
-
-            const infoContent = `
-              <div class="custom-info-window">
-                <small><em>${data.Category}</em></small><br />
-                <strong>Job ${data.JobID}</strong>
-                <p><strong>Parent Customer:</strong> ${data.ParentCustomer}</p>
-                <p><strong>Customer:</strong> ${data.Customer}</p>
-                <p><strong>Location:</strong> ${data.LocationName}<br />${data.Address}</p>
-                <p><strong>Description:</strong> ${data.Description}</p>
-                <p><strong><a href="${data.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
-              </div>
-            `;
-            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-            google.maps.event.addListener(marker, 'click', function() {
-              infoWindow.open(map, marker);
-            });
-            unscheduledJobMarkers.push(marker);
-          });
-        })
-        .fail(function() {
-          console.log("Error fetching unscheduled job data.");
-        });
-    }
-
+    // Helper function to create a vehicle marker icon container.
     function createVehicleMarkerContent(markerIconUrl, isMoving, bearing) {
       const markerIconContainer = document.createElement('div');
       const markerIcon = document.createElement('div');
@@ -268,6 +507,7 @@
       return markerIconContainer;
     }
 
+    // Helper function that creates a PinElement (used for job markers).
     function getPin(data) {
       const statusColors = {
         'Scheduled': '#6fdb6b',
@@ -306,14 +546,90 @@
       return new google.maps.marker.PinElement({ background: bgColor, glyphColor: glpColor, borderColor: brdColor, scale: 1.4 });
     }
 
+    // Reset functions for each map.
+    function resetLeftMap() {
+      leftMap.setCenter(leftDefault);
+      leftMap.setZoom(leftZoom);
+    }
+    function resetRightMap() {
+      rightMap.setCenter(rightDefault);
+      rightMap.setZoom(rightZoom);
+    }
+
     window.initMap = initMap;
+
+    // Clock update function for the two timezones
+    function updateClocks() {
+      const now = new Date();
+      // Houston (Central Time)
+      const houstonTime = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZone: 'America/Chicago'
+      }).format(now);
+      let houstonParts = houstonTime.split(" ");
+      if (houstonParts.length >= 2) {
+        let timePart = houstonParts.slice(0, houstonParts.length - 1).join(" ");
+        let ampmPart = houstonParts[houstonParts.length - 1];
+        document.getElementById("clock-houston").innerHTML = timePart + ' <span class="ampm">' + ampmPart + '</span>';
+      } else {
+        document.getElementById("clock-houston").innerHTML = houstonTime;
+      }
+      
+      // Northeast (Eastern Time)
+      const northeastTime = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZone: 'America/New_York'
+      }).format(now);
+      let northeastParts = northeastTime.split(" ");
+      if (northeastParts.length >= 2) {
+        let timePartNE = northeastParts.slice(0, northeastParts.length - 1).join(" ");
+        let ampmPartNE = northeastParts[northeastParts.length - 1];
+        document.getElementById("clock-northeast").innerHTML = timePartNE + ' <span class="ampm">' + ampmPartNE + '</span>';
+      } else {
+        document.getElementById("clock-northeast").innerHTML = northeastTime;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      updateClocks();
+      setInterval(updateClocks, 1000);
+    });
   </script>
 </head>
 <body>
-  <div id="map"></div>
+  <div id="container">
+    <!-- Left panel: Freeflow Houston, TX -->
+    <div id="left-panel">
+      <div class="map-header">
+        <div class="clock-box" id="clock-houston"></div>
+        <span>Freeflow Houston, TX</span>
+        <div>
+          <button onclick="resetLeftMap()">Reset</button>
+          <button id="expand-left-btn" onclick="toggleLeftPanel()">Expand</button>
+        </div>
+      </div>
+      <div id="left-map" class="map-container"></div>
+    </div>
+    <!-- Right panel: Freeflow Northeast -->
+    <div id="right-panel">
+      <div class="map-header">
+        <div class="clock-box" id="clock-northeast"></div>
+        <span>Freeflow Northeast</span>
+        <div>
+          <button onclick="resetRightMap()">Reset</button>
+          <button id="expand-right-btn" onclick="toggleRightPanel()">Expand</button>
+        </div>
+      </div>
+      <div id="right-map" class="map-container"></div>
+    </div>
+  </div>
   <!-- Load the Google Maps JavaScript API asynchronously -->
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-qJKroH3C4kpTx2coecp-CZ6tTnzYhXA&callback=initMap&v=weekly&libraries=marker"></script>
-  <script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
 </body>
 </html>
