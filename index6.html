@@ -259,8 +259,10 @@
               <div class="custom-info-window">
                 <small><em>${item.Category}</em></small><br />
                 <strong>Job ${item.JobID} / Work Order ${item.PONumber}</strong>
+                <p><strong>Created:</strong> ${item.Created}</p>
                 <p><strong>${item.Customer}<br />${item.LocationName}</strong><br />${item.Address}</p>
                 <p>Tech/s Assigned: ${techsAssigned}</p>
+                <p><strong>Description:</strong> ${item.Description}</p>
                 <p><strong><a href="${item.SFURL}" target="_blank">View Job in Service Fusion</a></strong></p>
               </div>
             `;
@@ -327,6 +329,7 @@
               <div class="custom-info-window">
                 <small><em>${item.Category}</em></small><br />
                 <strong>Job ${item.JobID}</strong>
+                <p><strong>Job Created:</strong> ${item.Created}</p>
                 <p><strong>Parent Customer:</strong> ${item.ParentCustomer}</p>
                 <p><strong>Customer:</strong> ${item.Customer}</p>
                 <p><strong>Location:</strong> ${item.LocationName}<br />${item.Address}</p>
