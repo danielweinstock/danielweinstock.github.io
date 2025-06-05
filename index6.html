@@ -314,9 +314,31 @@
   } else {
     markerIconUrl = 'yellow-star.svg';
   }
+
+  // Calculate days since Created
+  const createdDate = new Date(item.Created);
+  const now = new Date();
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const daysSince = Math.floor((now - createdDate) / msPerDay);
+
+  // Create marker icon container
   const markerIconContainer = document.createElement('div');
   markerIconContainer.className = 'star-icon';
+  markerIconContainer.style.position = 'relative';
   markerIconContainer.style.backgroundImage = `url(${markerIconUrl})`;
+
+  // Create label for days
+  const daysLabel = document.createElement('div');
+  daysLabel.innerText = daysSince;
+  daysLabel.style.position = 'absolute';
+  daysLabel.style.top = '50%';
+  daysLabel.style.left = '50%';
+  daysLabel.style.transform = 'translate(-50%, -50%)';
+  daysLabel.style.color = '#222';
+  daysLabel.style.fontWeight = 'bold';
+  daysLabel.style.fontSize = '18px';
+  daysLabel.style.textShadow = '0 0 4px #fff, 0 0 2px #fff';
+  markerIconContainer.appendChild(daysLabel);
 
             // Left map marker.
             const markerLeft = new google.maps.marker.AdvancedMarkerElement({
