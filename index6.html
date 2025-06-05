@@ -303,13 +303,21 @@
           unscheduledJobMarkersLeft = [];
           unscheduledJobMarkersRight = [];
 
-          data.forEach(function(item) {
-            const myLatlng = new google.maps.LatLng(item.Lat, item.Lng);
-            const markerIconUrl = item.Priority === 'High' ? 'red-star.svg' : 'yellow-star.svg';
-            const markerIconContainer = document.createElement('div');
-            markerIconContainer.className = 'star-icon';
-            markerIconContainer.style.backgroundImage = `url(${markerIconUrl})`;
-
+        data.forEach(function(item) {
+  const myLatlng = new google.maps.LatLng(item.Lat, item.Lng);
+  let markerIconUrl;
+  if (item.Priority === 'High') {
+    markerIconUrl = 'red-star.svg';
+  } else if (item.Status === 'Pre-Dispatch Review') {
+    markerIconUrl = 'Blue-Star.svg';
+  } else {
+    markerIconUrl = 'yellow-star.svg';
+  }
+  const markerIconContainer = document.createElement('div');
+  markerIconContainer.className = 'star-icon';
+  markerIconContainer.style.backgroundImage = `url(${markerIconUrl})`;
+  // ...rest of your marker setup code
+});
             // Left map marker.
             const markerLeft = new google.maps.marker.AdvancedMarkerElement({
               map: leftMap,
