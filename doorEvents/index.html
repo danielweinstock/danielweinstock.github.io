@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Digital Signage Door Events</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <!-- React, ReactDOM, Firebase -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Poppins:wght@200;300;400;500;600;700&display=swap');
+    :root {
+      --primaryColor: #011e4d;
+      --secondaryColor: #444444;
+      --bodyFontColor: #fff;
+      --bodyFontFamily: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --titleFontColor: #fff;
+      --titleFontFamily: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --logoURL: "none";
+    }
+    body {
+      color: var(--bodyFontColor);
+      font-family: var(--bodyFontFamily);
+      height: 100vh;
+      width: 100vw;
+      background: radial-gradient(
+        at center,
+        #cf7f3f 6%,
+        #633763 29%,
+        #4d2d4d 33%,
+        #201520 44%,
+        #171721 55%,
+        #1f1f47 66%,
+        #151518 100%
+      );
+      font-size: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--titleFontColor);
+      font-family: var(--titleFontFamily);
+    }
+    .content-container, .idle-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      background: none;
+    }
+    .content-container.fade-in,
+    .idle-container.fade-in {
+      opacity: 1;
+    }
+    .content-container.fade-out,
+    .idle-container.fade-out {
+      opacity: 0;
+    }
+    .idle-greeting {
+      font-size: 8rem;
+      margin: 0 0 4rem 0;
+      color: var(--titleFontColor);
+      font-weight: 300;
+      text-align: center;
+      font-family: var(--titleFontFamily);
+      letter-spacing: -0.02em;
+    }
+    .clock-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .time {
+      font-size: 6rem;
+      font-weight: 200;
+      color: var(--titleFontColor);
+      text-align: center;
+      font-family: var(--titleFontFamily);
+      letter-spacing: -0.01em;
+    }
+    .date {
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: var(--bodyFontColor);
+      text-align: center;
+      font-family: var(--bodyFontFamily);
+      opacity: 0.8;
+      letter-spacing: 0.01em;
+    }
+    h2.intro-text {
+      position: absolute;
+      top: 25vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: auto;
+      max-width: 90vw;
+    }
+    h1.data-number {
+      position: absolute;
+      top: 45vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: auto;
+      max-width: 90vw;
+      word-wrap: break-word;
+      font-size: 8rem;
+      margin: 2rem 0;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    h3.door-info {
+      position: absolute;
+      top: 65vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: auto;
+      max-width: 90vw;
+      font-size: 2.5rem;
+      color: var(--bodyFontColor);
+      opacity: 0.8;
+      margin: 0;
+      font-weight: 300;
+      letter-spacing: 0.01em;
+    }
+    @media screen and (max-width: 768px) {
+      .idle-greeting { font-size: 6rem; }
+      .time { font-size: 4.5rem; }
+      .date { font-size: 2rem; }
+      h1.data-number { font-size: 6rem; }
+      h3.door-info { font-size: 2rem; }
+    }
+    @media screen and (max-width: 480px) {
+      .idle-greeting { font-size: 4.5rem; }
+      .time { font-size: 3.5rem; }
+      .date { font-size: 1.5rem; }
+      h1.data-number { font-size: 4rem; }
+      h3.door-info { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    // ---- Firebase config (edit these values for your project) ----
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "freeflow-internal-projects.firebaseapp.com",
+      databaseURL: "https://freeflow-internal-projects-default-rtdb.firebaseio.com",
+      projectId: "freeflow-internal-projects",
+      storageBucket: "freeflow-internal-projects.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ---- App state ----
+    let fadeTimeout = null;
+    let idleTimeout = null;
+    let clockInterval = null;
+    let currentScreenId = null;
+
+    // ---- Get screen identifier ----
+    const getScreenIdentifier = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('screenId')) return urlParams.get('screenId');
+      const storedScreenId = localStorage.getItem('screencloudScreenId');
+      if (storedScreenId) return storedScreenId;
+      return null;
+    };
+
+    // ---- Screen ID setup UI ----
+    const setupScreenId = () => {
+      const setupDiv = document.createElement('div');
+      setupDiv.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.9); color: white; display: flex;
+        flex-direction: column; justify-content: center; align-items: center;
+        font-family: sans-serif; z-index: 9999;`;
+      setupDiv.innerHTML = `
+        <h1>Screen Setup Required</h1>
+        <p>Please select this screen's location:</p>
+        <button onclick="setScreenId('front_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Front Door</button>
+        <button onclick="setScreenId('back_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Back Door</button>
+        <button onclick="setScreenId('side_entrance')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Side Entrance</button>
+        <button onclick="setScreenId('main_lobby')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Main Lobby</button>
+      `;
+      document.body.appendChild(setupDiv);
+      window.setScreenId = (screenId) => {
+        localStorage.setItem('screencloudScreenId', screenId);
+        currentScreenId = screenId;
+        document.body.removeChild(setupDiv);
+        console.log('Screen ID set to:', screenId);
+        initializeApp();
+      };
+    };
+
+    // ---- Greeting/time/date formatting ----
+    const getTimeBasedGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 12) return "Good Morning";
+      if (hour >= 12 && hour < 17) return "Good Afternoon";
+      if (hour >= 17 && hour < 21) return "Good Evening";
+      return "Good Night";
+    };
+    const formatTime = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+    const formatDate = () => new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // ---- Idle message ----
+    const showIdleMessage = () => {
+      const updateClock = () => {
+        ReactDOM.render(
+          React.createElement('div', { id: "inner-root", className: "idle-container fade-in" },
+            React.createElement('h1', { className: "idle-greeting" }, getTimeBasedGreeting()),
+            React.createElement('div', { className: "clock-container" },
+              React.createElement('div', { className: "time" }, formatTime()),
+              React.createElement('div', { className: "date" }, formatDate())
+            )
+          ),
+          document.getElementById("root")
+        );
+      };
+      updateClock();
+      clockInterval = setInterval(updateClock, 1000);
+    };
+
+    // ---- Is this message for this screen? ----
+    const isMessageForThisScreen = (data) => {
+      if (!data.targetScreen) return true;
+      if (data.targetScreen === currentScreenId) return true;
+      if (data.targetScreenName && currentScreenId) return false;
+      return false;
+    };
+
+    // ---- Main render ----
+    const render = (data) => {
+      if (!isMessageForThisScreen(data)) {
+        console.log(`Message not for this screen. Target: ${data.targetScreen}, Current: ${currentScreenId}`);
+        return;
+      }
+      console.log(`Displaying message for ${data.targetScreen || 'all screens'}: ${data.name || data.user || data.number}`);
+      ReactDOM.render(
+        React.createElement('div', { id: "inner-root", className: "content-container fade-in" },
+          React.createElement('h2', { className: "template-text intro-text" }, "Welcome"),
+          React.createElement('h1', { className: "template-text data-number" },
+            data ? (data.name || data.user || data.number || "Guest") : "Guest"
+          ),
+          (data.doorName || data.door) && React.createElement('h3', { className: "template-text door-info" }, data.doorName || data.door)
+        ),
+        document.getElementById("root")
+      );
+      if (fadeTimeout) clearTimeout(fadeTimeout);
+      if (idleTimeout) clearTimeout(idleTimeout);
+      if (clockInterval) clearInterval(clockInterval);
+      const timeoutDuration = data.timeout || 30000;
+      fadeTimeout = setTimeout(() => {
+        const contentContainer = document.querySelector('.content-container');
+        if (contentContainer) {
+          contentContainer.classList.remove('fade-in');
+          contentContainer.classList.add('fade-out');
+          idleTimeout = setTimeout(showIdleMessage, 2000);
+        }
+      }, timeoutDuration);
+    };
+
+    // ---- Initialize app: Listen to Firebase RTDB ----
+    const initializeApp = () => {
+      showIdleMessage();
+      db.ref('doorEvents').limitToLast(1).on('child_added', function(snapshot) {
+        const data = snapshot.val();
+        console.log('Inbound RTDB event data:', data);
+        const name = data.name || data.user || "Guest";
+        const doorName = data.doorName || data.door || "Unknown Door";
+        const eventType = data.event || "entry";
+        const timeout = data.timeout || 10000;
+        const eventData = { ...data, name, doorName, eventType, timeout };
+        render(eventData);
+      });
+      console.log('App initialized, waiting for Firebase data pushes...');
+    };
+
+    // ---- App entry point ----
+    window.onload = () => {
+      currentScreenId = getScreenIdentifier();
+      if (currentScreenId) {
+        console.log('Screen ID determined:', currentScreenId);
+        initializeApp();
+      } else {
+        console.log('Screen ID not found, showing setup');
+        setupScreenId();
+      }
+    };
+  </script>
+</body>
+</html>
