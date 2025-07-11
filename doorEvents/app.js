@@ -35,6 +35,14 @@ let dashboardTimeout = null;
 
 function getScreenIdentifier() {
   const urlParams = new URLSearchParams(window.location.search);
+  
+  // Check for reset parameter
+  if (urlParams.get('reset') === 'true') {
+    localStorage.removeItem('screencloudScreenId');
+    console.log('Screen ID reset via URL parameter');
+    return null;
+  }
+  
   if (urlParams.get('screenId')) return urlParams.get('screenId');
   const storedScreenId = localStorage.getItem('screencloudScreenId');
   if (storedScreenId) return storedScreenId;
@@ -133,6 +141,7 @@ function getFirstName(data) {
 function IdleMessage() {
   const [time, setTime] = useState(formatTime());
   const [date, setDate] = useState(formatDate());
+  const [showReset, setShowReset] = useState(false);
 
   useEffect(function() {
     const interval = setInterval(function() {
@@ -142,18 +151,40 @@ function IdleMessage() {
     return function() { clearInterval(interval); };
   }, []);
 
+  function handleLogoClick() {
+    setShowReset(!showReset);
+    // Hide reset button after 10 seconds
+    setTimeout(function() {
+      setShowReset(false);
+    }, 10000);
+  }
+
+  function handleReset() {
+    if (confirm('Reset screen configuration? This will show the setup screen again.')) {
+      localStorage.removeItem('screencloudScreenId');
+      console.log('Screen ID reset via button');
+      location.reload();
+    }
+  }
+
   return e('div', { className: 'idle-container fade-in' },
     e('img', { 
       className: 'idle-logo',
       src: 'freeflow-logo-white-transparent.png',
-      alt: 'Freeflow Logo'
+      alt: 'Freeflow Logo',
+      onClick: handleLogoClick,
+      style: { cursor: 'pointer' }
     }),
     e('div', { className: 'idle-content' },
       e('h1', { className: 'idle-greeting' }, getTimeBasedGreeting()),
       e('div', { className: 'clock-container' },
         e('div', { className: 'time' }, time),
         e('div', { className: 'date' }, date)
-      )
+      ),
+      showReset ? e('button', {
+        className: 'reset-button',
+        onClick: handleReset
+      }, 'Reset Screen Configuration') : null
     )
   );
 }
@@ -236,9 +267,38 @@ function checkAndScrollContent() {
       dashboardTimeout = null;
     }
     
-    // Calculate much slower scroll duration - minimum 15 seconds, scale with content
     const scrollDistance = contentHeight - viewportHeight;
-    const scrollDuration = Math.max(15000, scrollDistance * 20); // 20ms per pixel
+    // Much slower scroll: 30-60 seconds depending on content
+    const scrollDuration = Math.max(30000, scrollDistance * 100); // 100ms per pixel for very slow scroll
+    
+    console.log(`Scrolling ${scrollDistance}px over ${scrollDuration}ms`);
+    
+    // Custom smooth scroll animation
+    let startTime = null;
+    let startScrollTop = contentBody.scrollTop;
+    
+    function animateScroll(currentTime) {
+      if (startTime === null) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / scrollDuration, 1);
+      
+      // Easing function for smooth animation (ease-in-out)
+      const easeInOutQuad = progress < 0.5 
+        ? 2 * progress * progress 
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      
+      const currentScrollTop = startScrollTop + (scrollDistance * easeInOutQuad);
+      contentBody.scrollTop = currentScrollTop;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
+      } else {
+        console.log('Scroll animation completed');
+      }
+    }
+    
+    // Start the scroll animation
+    requestAnimationFrame(animateScroll);
     
     // Calculate when scroll will complete (3 second delay + scroll duration)
     const scrollCompletionTime = 3000 + scrollDuration;
@@ -248,16 +308,10 @@ function checkAndScrollContent() {
     const timeoutDuration = scrollCompletionTime > standardTimeout ? 
       scrollCompletionTime + 5000 : standardTimeout;
     
-    // Smooth scroll to bottom with much slower speed
-    contentBody.scrollTo({
-      top: scrollDistance,
-      behavior: 'smooth'
-    });
-    
     // Set timeout based on calculation above
     dashboardTimeout = setTimeout(showIdleMessage, timeoutDuration);
     
-    console.log(`Auto-scroll will take ${scrollDuration}ms, timeout set to: ${timeoutDuration}ms`);
+    console.log(`Custom scroll will take ${scrollDuration}ms, timeout set to: ${timeoutDuration}ms`);
   }
 }
 
@@ -607,6 +661,19 @@ function initializeApp() {
 }
 
 window.onload = function() {
+  // Add keyboard shortcut to reset screen configuration
+  document.addEventListener('keydown', function(event) {
+    // Ctrl + Shift + R to reset screen configuration
+    if (event.ctrlKey && event.shiftKey && event.key === 'R') {
+      event.preventDefault();
+      if (confirm('Reset screen configuration? This will show the setup screen again.')) {
+        localStorage.removeItem('screencloudScreenId');
+        console.log('Screen ID reset via keyboard shortcut');
+        location.reload();
+      }
+    }
+  });
+
   currentScreenId = getScreenIdentifier();
   if (currentScreenId) {
     console.log('Screen ID determined:', currentScreenId);
