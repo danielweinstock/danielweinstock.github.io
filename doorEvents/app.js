@@ -149,14 +149,20 @@ function JobCard(props) {
   const job = props && props.job ? props.job : {};
   const index = props && typeof props.index === 'number' ? props.index : 0;
   
+  // Use the background color from the job data, fallback to kelly green
+  const backgroundColor = job.background || '#00a651';
+  
   return e('div', { 
     className: 'job-card',
     id: 'job-card-' + index
   },
     e('div', { className: 'job-card-content' },
-      e('div', { className: 'job-time-bar' },
+      e('div', { 
+        className: 'job-time-bar',
+        style: { backgroundColor: backgroundColor }
+      },
         e('div', { className: 'job-time' }, formatJobTime(job.startMin)),
-        e('div', { className: 'job-time-label' }, 'START TIME')
+        e('div', { className: 'job-number' }, 'JOB #' + (job.jobNumber || 'N/A'))
       ),
       e('div', { className: 'job-details' },
         e('div', { className: 'job-customer' }, job.customerName || job.customer_name || '—'),
@@ -164,7 +170,7 @@ function JobCard(props) {
           [job.city_state, job.postal_code].filter(Boolean).join(' • ') || 'Location TBD'
         ),
         e('div', { className: 'job-meta' },
-          e('div', { className: 'job-number' }, 'JOB #' + (job.jobNumber || 'N/A')),
+          e('div', { className: 'job-status' }, job.jobStatusName || job.code || 'Scheduled'),
           e('div', { className: 'job-category' }, job.job_category || 'Service Call')
         )
       )
@@ -242,6 +248,7 @@ function Dashboard(props) {
         style: { animationDelay: animationDelay }
       },
         e('div', { className: 'parts-description' }, part.description || 'Part description'),
+        part.bin ? e('div', { className: 'parts-bin' }, 'BIN: ' + part.bin) : null,
         e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
         part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
       );
@@ -264,7 +271,7 @@ function Dashboard(props) {
     e('div', { className: 'section', key: 'jobs-section' },
       e('h2', { className: 'section-title' },
         e('div', { className: 'section-icon' }, '📅'),
-        'Today\'s Schedule'
+        'Your Scheduled Jobs'
       ),
       jobCards
     )
@@ -297,10 +304,6 @@ function Dashboard(props) {
 
   return e('div', { className: 'content-container fade-in' },
     e('div', { className: 'header-section' },
-      e('div', { className: 'logo-container' },
-        e('div', { className: 'logo-placeholder' }, 'FREEFLOW\nLOGO'),
-        e('div', { className: 'company-name' }, 'Freeflow Beverage Solutions')
-      ),
       e('div', { className: 'welcome-text' }, 'Welcome ' + userFirstName)
     ),
     e('div', { className: 'content-body' }, contentElements)
