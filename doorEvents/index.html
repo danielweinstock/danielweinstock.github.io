@@ -7,8 +7,8 @@
   <!-- React, ReactDOM, Firebase -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-database-compat.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Poppins:wght@200;300;400;500;600;700&display=swap');
     
@@ -536,20 +536,6 @@
       border: 2px dashed rgba(255, 255, 255, 0.2);
     }
 
-    /* Welcome transition animations */
-    .welcome-shrink {
-      animation: shrinkToHeader 1s ease-out forwards;
-    }
-
-    @keyframes shrinkToHeader {
-      from {
-        transform: scale(1) translateY(0);
-      }
-      to {
-        transform: scale(0.3) translateY(-60vh);
-      }
-    }
-
     /* Setup screen styles */
     .setup-screen {
       position: fixed;
@@ -605,12 +591,12 @@
 </head>
 <body>
   <div id="root"></div>
-  
-<script>
-  // React elements using createElement to avoid JSX compilation
-  const { createElement: e, useState, useEffect } = React;
 
-  // Firebase config
+<script>
+  const e = React.createElement;
+  const useState = React.useState;
+  const useEffect = React.useEffect;
+
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "freeflow-internal-projects.firebaseapp.com",
@@ -621,8 +607,20 @@
     appId: "YOUR_APP_ID"
   };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  let db = null;
+  
+  // Initialize Firebase if available
+  if (typeof firebase !== 'undefined') {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+      console.log('Firebase initialized successfully');
+    } catch (error) {
+      console.error('Firebase initialization failed:', error);
+    }
+  } else {
+    console.warn('Firebase not available - running in demo mode');
+  }
 
   let fadeTimeout = null;
   let idleTimeout = null;
@@ -630,17 +628,15 @@
   let currentScreenId = null;
   let dashboardTimeout = null;
 
-  // Utility functions
-  const getScreenIdentifier = () => {
+  function getScreenIdentifier() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('screenId')) return urlParams.get('screenId');
     const storedScreenId = localStorage.getItem('screencloudScreenId');
     if (storedScreenId) return storedScreenId;
     return null;
-  };
+  }
 
-  const playPartsAlert = () => {
-    // Create audio context and generate a simple beep
+  function playPartsAlert() {
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -660,90 +656,58 @@
     } catch (error) {
       console.log('Audio not supported');
     }
-  };
+  }
 
-  const setupScreenId = () => {
-    const SetupScreen = () => {
-      const handleSetScreenId = (screenId) => {
-        localStorage.setItem('screencloudScreenId', screenId);
-        currentScreenId = screenId;
-        console.log('Screen ID set to:', screenId);
-        initializeApp();
-      };
-
-      return e('div', { className: 'setup-screen' },
-        e('h1', null, 'Screen Setup Required'),
-        e('p', null, 'Please select this screen\'s location:'),
-        e('button', { 
-          className: 'setup-button',
-          onClick: () => handleSetScreenId('front_door')
-        }, 'Front Door'),
-        e('button', { 
-          className: 'setup-button',
-          onClick: () => handleSetScreenId('back_door')
-        }, 'Back Door'),
-        e('button', { 
-          className: 'setup-button',
-          onClick: () => handleSetScreenId('side_entrance')
-        }, 'Side Entrance'),
-        e('button', { 
-          className: 'setup-button',
-          onClick: () => handleSetScreenId('main_lobby')
-        }, 'Main Lobby')
-      );
-    };
-
-    ReactDOM.render(e(SetupScreen), document.getElementById("root"));
-  };
-
-  const getTimeBasedGreeting = () => {
+  function getTimeBasedGreeting() {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return "Good Morning";
     if (hour >= 12 && hour < 17) return "Good Afternoon";
     if (hour >= 17 && hour < 21) return "Good Evening";
     return "Good Night";
-  };
+  }
 
-  const formatTime = () => new Date().toLocaleTimeString([], { 
-    hour: 'numeric', 
-    minute: '2-digit', 
-    hour12: true 
-  });
+  function formatTime() {
+    return new Date().toLocaleTimeString([], { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+  }
 
-  const formatDate = () => new Date().toLocaleDateString([], { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+  function formatDate() {
+    return new Date().toLocaleDateString([], { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
 
-  const formatJobTime = (startMin) => {
+  function formatJobTime(startMin) {
     if (!startMin) return '';
     const mins = parseInt(startMin, 10);
     const hours = Math.floor(mins / 60);
     const minutes = mins % 60;
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
-  };
+    return displayHours + ':' + minutes.toString().padStart(2, '0') + ' ' + period;
+  }
 
-  const getFirstName = (fullName) => {
+  function getFirstName(fullName) {
     if (!fullName) return 'Guest';
     return fullName.split(' ')[0];
-  };
+  }
 
-  // Idle message component
-  const IdleMessage = () => {
+  function IdleMessage() {
     const [time, setTime] = useState(formatTime());
     const [date, setDate] = useState(formatDate());
 
-    useEffect(() => {
-      const interval = setInterval(() => {
+    useEffect(function() {
+      const interval = setInterval(function() {
         setTime(formatTime());
         setDate(formatDate());
       }, 1000);
-
-      return () => clearInterval(interval);
+      return function() { clearInterval(interval); };
     }, []);
 
     return e('div', { className: 'idle-container fade-in' },
@@ -753,196 +717,183 @@
         e('div', { className: 'date' }, date)
       )
     );
-  };
+  }
 
-  const showIdleMessage = () => {
-    if (dashboardTimeout) clearTimeout(dashboardTimeout);
-    ReactDOM.render(e(IdleMessage), document.getElementById("root"));
-  };
-
-  // Welcome message component
-  const WelcomeMessage = ({ data }) => {
+  function WelcomeMessage(props) {
+    const data = props.data;
     const name = data ? (data.name || data.user || "Guest") : "Guest";
-
     return e('div', { className: 'content-container fade-in' },
-      e('div', { className: 'welcome-large' },
-        e('h2', { className: 'welcome-title' }, 'Welcome'),
-        e('h1', { className: 'welcome-name' }, name)
-      )
-    );
-  };
-
-  const renderWelcome = (data) => {
-    ReactDOM.render(e(WelcomeMessage, { data }), document.getElementById("root"));
-    
-    if (fadeTimeout) clearTimeout(fadeTimeout);
-    if (idleTimeout) clearTimeout(idleTimeout);
-    if (clockInterval) clearInterval(clockInterval);
-  };
-
-  // Dashboard component
-  const Dashboard = ({ dashboard }) => {
-    // Parse jobs
-    let jobs = [];
-    if (dashboard.dispatch && dashboard.dispatch.ASSIGNED) {
-      const allVisits = Object.values(dashboard.dispatch.ASSIGNED)
-        .flatMap(obj => Object.values(obj));
-      jobs = allVisits.filter(j => j.jobNumber && j.jobStartDate)
-        .map(j => ({
-          ...j,
-          startSort: (() => {
-            let date = j.jobStartDate;
-            let mins = parseInt(j.startMin || 0, 10);
-            if (!date || isNaN(mins)) return Number.MAX_SAFE_INTEGER;
-            let [year, month, day] = date.split('-').map(x => parseInt(x, 10));
-            return new Date(year, month - 1, day, Math.floor(mins / 60), mins % 60).getTime();
-          })()
-        }))
-        .sort((a, b) => a.startSort - b.startSort);
-    }
-
-    const parts = dashboard.parts_transfer || [];
-    const messages = dashboard.messages || [];
-    const userName = dashboard.userName || 'Guest';
-
-    // Play alert if parts exist
-    useEffect(() => {
-      if (parts.length > 0) {
-        playPartsAlert();
-      }
-    }, [parts.length]);
-
-    return e('div', { className: 'content-container fade-in' },
-      // Header
       e('div', { className: 'header-section' },
         e('div', { className: 'logo-container' },
           e('div', { className: 'logo-placeholder' }, 'FREEFLOW\nLOGO'),
           e('div', { className: 'company-name' }, 'Freeflow Beverage Solutions')
         ),
-        e('div', { className: 'welcome-text' }, `Welcome ${getFirstName(userName)}`)
+        e('div', { className: 'welcome-text' }, 'Welcome ' + getFirstName(userName))
       ),
-
-      // Content body
-      e('div', { className: 'content-body' },
-        // Jobs section
-        e('div', { className: 'section' },
-          e('h2', { className: 'section-title' },
-            e('div', { className: 'no-jobs' }, 'No jobs scheduled for today.')
-        ),
-
-        // Parts section
-        parts.length > 0 && e('div', { className: 'section' },
-          e('div', { className: 'parts-alert' }, '🚨 PARTS TRANSFER REQUIRED 🚨'),
-          e('h2', { className: 'section-title' },
-            e('div', { className: 'section-icon' }, '📦'),
-            'Parts to Transfer'
-          ),
-          parts.map((part, index) =>
-            e('div', {
-              key: part.transfer_id,
-              className: 'parts-card',
-              style: { animationDelay: `${index * 0.2}s` }
-            },
-              e('div', { className: 'parts-description' }, part.description),
-              e('div', { className: 'parts-job' }, `For Job: ${part.job_number || 'N/A'}`),
-              part.notes && e('div', { className: 'parts-notes' }, part.notes)
-            )
-          )
-        ),
-
-        // Messages section
-        messages.length > 0 && e('div', { className: 'section' },
-          e('h2', { className: 'section-title' },
-            e('div', { className: 'section-icon' }, '💬'),
-            'Messages'
-          ),
-          messages.map((message, index) =>
-            e('div', {
-              key: message.messageId,
-              className: 'message-card',
-              style: { animationDelay: `${index * 0.2}s` }
-            },
-              e('div', { className: 'message-icon' }, '📢'),
-              e('div', { className: 'message-text' }, message.message_text)
-            )
-          )
-        )
-      )
+      e('div', { className: 'content-body' }, contentElements)
     );
-  };
+  }
 
-  const renderDashboard = (dashboard, timeout = 35000) => {
-    ReactDOM.render(e(Dashboard, { dashboard }), document.getElementById("root"));
+  function SetupScreen() {
+    function handleSetScreenId(screenId) {
+      localStorage.setItem('screencloudScreenId', screenId);
+      currentScreenId = screenId;
+      console.log('Screen ID set to:', screenId);
+      initializeApp();
+    }
 
-    // Clean up previous timeouts
+    return e('div', { className: 'setup-screen' },
+      e('h1', null, 'Screen Setup Required'),
+      e('p', null, 'Please select this screen\'s location:'),
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('front_door'); }
+      }, 'Front Door'),
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('back_door'); }
+      }, 'Back Door'),
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('side_entrance'); }
+      }, 'Side Entrance'),
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('main_lobby'); }
+      }, 'Main Lobby')
+    );
+  }
+
+  function showIdleMessage() {
+    if (dashboardTimeout) clearTimeout(dashboardTimeout);
+    ReactDOM.render(e(IdleMessage), document.getElementById("root"));
+  }
+
+  function renderWelcome(data) {
+    ReactDOM.render(e(WelcomeMessage, { data: data }), document.getElementById("root"));
     if (fadeTimeout) clearTimeout(fadeTimeout);
     if (idleTimeout) clearTimeout(idleTimeout);
     if (clockInterval) clearInterval(clockInterval);
+  }
 
-    // Fade back to idle after timeout
-    dashboardTimeout = setTimeout(showIdleMessage, timeout);
-  };
+  function renderDashboard(dashboard, timeout) {
+    ReactDOM.render(e(Dashboard, { dashboard: dashboard }), document.getElementById("root"));
+    if (fadeTimeout) clearTimeout(fadeTimeout);
+    if (idleTimeout) clearTimeout(idleTimeout);
+    if (clockInterval) clearInterval(clockInterval);
+    dashboardTimeout = setTimeout(showIdleMessage, timeout || 35000);
+  }
 
-  // Message filtering
-  const isMessageForThisScreen = (data) => {
+  function setupScreenId() {
+    ReactDOM.render(e(SetupScreen), document.getElementById("root"));
+  }
+
+  function isMessageForThisScreen(data) {
     if (!data.targetScreen) return true;
     if (data.targetScreen === currentScreenId) return true;
     if (data.targetScreenName && currentScreenId) return false;
     return false;
-  };
+  }
 
-  // Main App initialization
-  const initializeApp = () => {
+  function initializeApp() {
     showIdleMessage();
 
-    db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
-      const data = snapshot.val();
-      console.log('Inbound RTDB event data:', data);
-      
-      if (!isMessageForThisScreen(data)) {
-        console.log('Message not for this screen, ignoring');
-        return;
-      }
+    // Only set up Firebase listener if Firebase is available
+    if (db) {
+      db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
+        const data = snapshot.val();
+        console.log('Inbound RTDB event data:', data);
+        
+        if (!isMessageForThisScreen(data)) {
+          console.log('Message not for this screen, ignoring');
+          return;
+        }
 
-      const name = data.name || data.user || "Guest";
-      const eventType = data.event || "entry";
-      const timeout = data.timeout || 30000;
-      const eventData = { ...data, name, eventType, timeout };
+        const name = data.name || data.user || "Guest";
+        const eventType = data.event || "entry";
+        const timeout = data.timeout || 30000;
+        const eventData = Object.assign({}, data, { name: name, eventType: eventType, timeout: timeout });
 
-      // 1. Show welcome message immediately
-      renderWelcome(eventData);
+        renderWelcome(eventData);
 
-      // 2. If sf_id present, call webhook and display dashboard
-      if (data.sf_id) {
-        try {
-          const resp = await fetch(`https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=${encodeURIComponent(data.sf_id)}`);
-          if (resp.ok) {
-            const dashboard = await resp.json();
-            // Add user name to dashboard data
-            dashboard.userName = name;
-            // Slight delay for smooth transition
-            setTimeout(() => renderDashboard(dashboard, 35000), 1500);
-          } else {
-            console.error('Failed to fetch dashboard data');
-            // Still show basic welcome for the timeout period
+        if (data.sf_id) {
+          try {
+            const resp = await fetch('https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=' + encodeURIComponent(data.sf_id));
+            if (resp.ok) {
+              const dashboard = await resp.json();
+              dashboard.userName = name;
+              setTimeout(function() {
+                renderDashboard(dashboard, 35000);
+              }, 1500);
+            } else {
+              console.error('Failed to fetch dashboard data');
+              setTimeout(showIdleMessage, timeout);
+            }
+          } catch (e) {
+            console.error("Error fetching dashboard from Make.com:", e);
             setTimeout(showIdleMessage, timeout);
           }
-        } catch (e) {
-          console.error("Error fetching dashboard from Make.com:", e);
-          // Still show basic welcome for the timeout period
+        } else {
           setTimeout(showIdleMessage, timeout);
         }
-      } else {
-        // No dashboard data, just show welcome then return to idle
-        setTimeout(showIdleMessage, timeout);
-      }
-    });
+      });
+      console.log('App initialized with Firebase, waiting for data pushes...');
+    } else {
+      console.log('App initialized without Firebase - demo mode');
+      
+      // Demo mode - simulate a door event after 5 seconds for testing
+      setTimeout(function() {
+        const demoData = {
+          name: "Daniel Weinstock",
+          user: "Daniel Weinstock", 
+          sf_id: "demo_id",
+          event: "entry",
+          timeout: 30000
+        };
+        renderWelcome(demoData);
+        
+        // Simulate dashboard data
+        setTimeout(function() {
+          const demoDashboard = {
+            userName: "Daniel Weinstock",
+            dispatch: {
+              ASSIGNED: {
+                tech1: {
+                  job1: {
+                    jobNumber: "12345",
+                    jobStartDate: "2025-07-10",
+                    startMin: 540,
+                    customerName: "ABC Beverage Co",
+                    city_state: "Boston, MA",
+                    postal_code: "02101",
+                    job_category: "Installation",
+                    jobStatusName: "Scheduled"
+                  }
+                }
+              }
+            },
+            parts_transfer: [
+              {
+                transfer_id: "pt1",
+                description: "CO2 Regulator - Model XR500",
+                job_number: "12345",
+                notes: "Required for installation tomorrow"
+              }
+            ],
+            messages: [
+              {
+                messageId: "msg1",
+                message_text: "Remember to check equipment before departure"
+              }
+            ]
+          };
+          renderDashboard(demoDashboard, 35000);
+        }, 1500);
+      }, 5000);
+    }
+  }
 
-    console.log('App initialized, waiting for Firebase data pushes...');
-  };
-
-  // App startup
-  window.onload = () => {
+  window.onload = function() {
     currentScreenId = getScreenIdentifier();
     if (currentScreenId) {
       console.log('Screen ID determined:', currentScreenId);
@@ -954,34 +905,148 @@
   };
 </script>
 </body>
-</html> { className: 'section-icon' }, '📅'),
-            'Today\'s Schedule'
+</html>-in' },
+      e('div', { className: 'welcome-large' },
+        e('h2', { className: 'welcome-title' }, 'Welcome'),
+        e('h1', { className: 'welcome-name' }, name)
+      )
+    );
+  }
+
+  function JobCard(props) {
+    const job = props.job;
+    const index = props.index;
+    const animationDelay = (index * 0.2) + 's';
+    
+    return e('div', { 
+      key: job.jobNumber + job.jobStartDate,
+      className: 'job-card',
+      style: { animationDelay: animationDelay }
+    },
+      e('div', { className: 'job-card-content' },
+        e('div', { className: 'job-time-bar' },
+          e('div', { className: 'job-time' }, formatJobTime(job.startMin))
+        ),
+        e('div', { className: 'job-details' },
+          e('div', { className: 'job-customer' }, job.customerName || job.customer_name || '—'),
+          e('div', { className: 'job-location' }, 
+            [job.city_state, job.postal_code].filter(Boolean).join(' • ')
           ),
-          jobs.length > 0 ? 
-            jobs.map((job, index) => 
-              e('div', { 
-                key: job.jobNumber + job.jobStartDate,
-                className: 'job-card',
-                style: { animationDelay: `${index * 0.2}s` }
-              },
-                e('div', { className: 'job-card-content' },
-                  e('div', { className: 'job-time-bar' },
-                    e('div', { className: 'job-time' }, formatJobTime(job.startMin))
-                  ),
-                  e('div', { className: 'job-details' },
-                    e('div', { className: 'job-customer' }, job.customerName || job.customer_name || '—'),
-                    e('div', { className: 'job-location' }, 
-                      [job.city_state, job.postal_code].filter(Boolean).join(' • ')
-                    ),
-                    e('div', { className: 'job-meta' },
-                      e('div', { className: 'job-number' }, `Job #${job.jobNumber}`),
-                      e('div', { className: 'job-category' }, job.job_category || 'No category')
-                    ),
-                    e('div', { className: 'job-status' }, 
-                      `Status: ${job.jobStatusName || job.code || '—'}`
-                    )
-                  )
-                )
-              )
-            ) :
-            e('div',
+          e('div', { className: 'job-meta' },
+            e('div', { className: 'job-number' }, 'Job #' + job.jobNumber),
+            e('div', { className: 'job-category' }, job.job_category || 'No category')
+          ),
+          e('div', { className: 'job-status' }, 
+            'Status: ' + (job.jobStatusName || job.code || '—')
+          )
+        )
+      )
+    );
+  }
+
+  function Dashboard(props) {
+    const dashboard = props.dashboard;
+    
+    let jobs = [];
+    if (dashboard.dispatch && dashboard.dispatch.ASSIGNED) {
+      const allVisits = Object.values(dashboard.dispatch.ASSIGNED).flatMap(function(obj) {
+        return Object.values(obj);
+      });
+      jobs = allVisits.filter(function(j) {
+        return j.jobNumber && j.jobStartDate;
+      }).map(function(j) {
+        let date = j.jobStartDate;
+        let mins = parseInt(j.startMin || 0, 10);
+        let startSort = Number.MAX_SAFE_INTEGER;
+        if (date && !isNaN(mins)) {
+          let dateParts = date.split('-').map(function(x) { return parseInt(x, 10); });
+          let year = dateParts[0];
+          let month = dateParts[1];
+          let day = dateParts[2];
+          startSort = new Date(year, month - 1, day, Math.floor(mins / 60), mins % 60).getTime();
+        }
+        return Object.assign({}, j, { startSort: startSort });
+      }).sort(function(a, b) {
+        return a.startSort - b.startSort;
+      });
+    }
+
+    const parts = dashboard.parts_transfer || [];
+    const messages = dashboard.messages || [];
+    const userName = dashboard.userName || 'Guest';
+
+    useEffect(function() {
+      if (parts.length > 0) {
+        playPartsAlert();
+      }
+    }, [parts.length]);
+
+    const jobCards = jobs.length > 0 ? 
+      jobs.map(function(job, index) {
+        return e(JobCard, { job: job, index: index, key: job.jobNumber + job.jobStartDate });
+      }) : 
+      [e('div', { className: 'no-jobs', key: 'no-jobs' }, 'No jobs scheduled for today.')];
+
+    const partsCards = parts.length > 0 ? 
+      parts.map(function(part, index) {
+        const animationDelay = (index * 0.2) + 's';
+        return e('div', {
+          key: part.transfer_id,
+          className: 'parts-card',
+          style: { animationDelay: animationDelay }
+        },
+          e('div', { className: 'parts-description' }, part.description),
+          e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
+          part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
+        );
+      }) : [];
+
+    const messageCards = messages.length > 0 ?
+      messages.map(function(message, index) {
+        const animationDelay = (index * 0.2) + 's';
+        return e('div', {
+          key: message.messageId,
+          className: 'message-card',
+          style: { animationDelay: animationDelay }
+        },
+          e('div', { className: 'message-icon' }, '📢'),
+          e('div', { className: 'message-text' }, message.message_text)
+        );
+      }) : [];
+
+    const contentElements = [
+      e('div', { className: 'section', key: 'jobs-section' },
+        e('h2', { className: 'section-title' },
+          e('div', { className: 'section-icon' }, '📅'),
+          'Today\'s Schedule'
+        ),
+        jobCards
+      )
+    ];
+
+    if (parts.length > 0) {
+      contentElements.push(
+        e('div', { className: 'section', key: 'parts-section' },
+          e('div', { className: 'parts-alert' }, '🚨 PARTS TRANSFER REQUIRED 🚨'),
+          e('h2', { className: 'section-title' },
+            e('div', { className: 'section-icon' }, '📦'),
+            'Parts to Transfer'
+          ),
+          partsCards
+        )
+      );
+    }
+
+    if (messages.length > 0) {
+      contentElements.push(
+        e('div', { className: 'section', key: 'messages-section' },
+          e('h2', { className: 'section-title' },
+            e('div', { className: 'section-icon' }, '💬'),
+            'Messages'
+          ),
+          messageCards
+        )
+      );
+    }
+
+    return e('div', { className: 'content-container fade
