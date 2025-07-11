@@ -913,13 +913,24 @@
     );
   }
 
+  function WelcomeMessage(props) {
+    const data = props && props.data ? props.data : {};
+    const name = data.name || data.user || "Guest";
+    
+    return e('div', { className: 'content-container fade-in' },
+      e('div', { className: 'welcome-large' },
+        e('h2', { className: 'welcome-title' }, 'Welcome'),
+        e('h1', { className: 'welcome-name' }, name)
+      )
+    );
+  }
+
   function JobCard(props) {
-    const job = props.job;
-    const index = props.index;
+    const job = props && props.job ? props.job : {};
+    const index = props && typeof props.index === 'number' ? props.index : 0;
     const animationDelay = (index * 0.2) + 's';
     
     return e('div', { 
-      key: job.jobNumber + job.jobStartDate,
       className: 'job-card',
       style: { animationDelay: animationDelay }
     },
@@ -930,10 +941,10 @@
         e('div', { className: 'job-details' },
           e('div', { className: 'job-customer' }, job.customerName || job.customer_name || '—'),
           e('div', { className: 'job-location' }, 
-            [job.city_state, job.postal_code].filter(Boolean).join(' • ')
+            [job.city_state, job.postal_code].filter(Boolean).join(' • ') || 'Location TBD'
           ),
           e('div', { className: 'job-meta' },
-            e('div', { className: 'job-number' }, 'Job #' + job.jobNumber),
+            e('div', { className: 'job-number' }, 'Job #' + (job.jobNumber || 'N/A')),
             e('div', { className: 'job-category' }, job.job_category || 'No category')
           ),
           e('div', { className: 'job-status' }, 
@@ -945,30 +956,35 @@
   }
 
   function Dashboard(props) {
-    const dashboard = props.dashboard;
+    const dashboard = props && props.dashboard ? props.dashboard : {};
     
     let jobs = [];
     if (dashboard.dispatch && dashboard.dispatch.ASSIGNED) {
-      const allVisits = Object.values(dashboard.dispatch.ASSIGNED).flatMap(function(obj) {
-        return Object.values(obj);
-      });
-      jobs = allVisits.filter(function(j) {
-        return j.jobNumber && j.jobStartDate;
-      }).map(function(j) {
-        let date = j.jobStartDate;
-        let mins = parseInt(j.startMin || 0, 10);
-        let startSort = Number.MAX_SAFE_INTEGER;
-        if (date && !isNaN(mins)) {
-          let dateParts = date.split('-').map(function(x) { return parseInt(x, 10); });
-          let year = dateParts[0];
-          let month = dateParts[1];
-          let day = dateParts[2];
-          startSort = new Date(year, month - 1, day, Math.floor(mins / 60), mins % 60).getTime();
-        }
-        return Object.assign({}, j, { startSort: startSort });
-      }).sort(function(a, b) {
-        return a.startSort - b.startSort;
-      });
+      try {
+        const allVisits = Object.values(dashboard.dispatch.ASSIGNED).flatMap(function(obj) {
+          return Object.values(obj);
+        });
+        jobs = allVisits.filter(function(j) {
+          return j && j.jobNumber && j.jobStartDate;
+        }).map(function(j) {
+          let date = j.jobStartDate;
+          let mins = parseInt(j.startMin || 0, 10);
+          let startSort = Number.MAX_SAFE_INTEGER;
+          if (date && !isNaN(mins)) {
+            let dateParts = date.split('-').map(function(x) { return parseInt(x, 10); });
+            let year = dateParts[0];
+            let month = dateParts[1];
+            let day = dateParts[2];
+            startSort = new Date(year, month - 1, day, Math.floor(mins / 60), mins % 60).getTime();
+          }
+          return Object.assign({}, j, { startSort: startSort });
+        }).sort(function(a, b) {
+          return a.startSort - b.startSort;
+        });
+      } catch (error) {
+        console.error('Error processing jobs:', error);
+        jobs = [];
+      }
     }
 
     const parts = dashboard.parts_transfer || [];
@@ -983,7 +999,7 @@
 
     const jobCards = jobs.length > 0 ? 
       jobs.map(function(job, index) {
-        return e(JobCard, { job: job, index: index, key: job.jobNumber + job.jobStartDate });
+        return e(JobCard, { job: job, index: index, key: (job.jobNumber || 'job') + '-' + index });
       }) : 
       [e('div', { className: 'no-jobs', key: 'no-jobs' }, 'No jobs scheduled for today.')];
 
@@ -991,11 +1007,11 @@
       parts.map(function(part, index) {
         const animationDelay = (index * 0.2) + 's';
         return e('div', {
-          key: part.transfer_id,
+          key: (part.transfer_id || 'part') + '-' + index,
           className: 'parts-card',
           style: { animationDelay: animationDelay }
         },
-          e('div', { className: 'parts-description' }, part.description),
+          e('div', { className: 'parts-description' }, part.description || 'Part description'),
           e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
           part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
         );
@@ -1005,12 +1021,12 @@
       messages.map(function(message, index) {
         const animationDelay = (index * 0.2) + 's';
         return e('div', {
-          key: message.messageId,
+          key: (message.messageId || 'message') + '-' + index,
           className: 'message-card',
           style: { animationDelay: animationDelay }
         },
           e('div', { className: 'message-icon' }, '📢'),
-          e('div', { className: 'message-text' }, message.message_text)
+          e('div', { className: 'message-text' }, message.message_text || 'No message text')
         );
       }) : [];
 
