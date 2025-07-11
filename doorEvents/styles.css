@@ -570,6 +570,30 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
+/* Reset button for idle screen */
+.reset-button {
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  background: var(--alert-red);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  font-family: var(--bodyFontFamily);
+  opacity: 0.8;
+}
+
+.reset-button:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  opacity: 1;
+}
+
 /* Responsive Design for Portrait Mode */
 @media screen and (max-width: 768px) and (orientation: portrait) {
   .header-section {
