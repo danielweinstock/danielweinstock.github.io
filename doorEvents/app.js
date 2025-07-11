@@ -128,10 +128,12 @@ function IdleMessage() {
       src: 'freeflow-logo-white-transparent.png',
       alt: 'Freeflow Logo'
     }),
-    e('h1', { className: 'idle-greeting' }, getTimeBasedGreeting()),
-    e('div', { className: 'clock-container' },
-      e('div', { className: 'time' }, time),
-      e('div', { className: 'date' }, date)
+    e('div', { className: 'idle-content' },
+      e('h1', { className: 'idle-greeting' }, getTimeBasedGreeting()),
+      e('div', { className: 'clock-container' },
+        e('div', { className: 'time' }, time),
+        e('div', { className: 'date' }, date)
+      )
     )
   );
 }
