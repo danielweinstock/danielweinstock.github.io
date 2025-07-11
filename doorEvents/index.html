@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Digital Signage Door Events</title>
+  <title>Freeflow Beverage Solutions - Digital Signage</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <!-- React, ReactDOM, Firebase -->
@@ -11,419 +11,506 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Poppins:wght@200;300;400;500;600;700&display=swap');
+    
     :root {
-      --primaryColor: #011e4d;
-      --secondaryColor: #444444;
-      --bodyFontColor: #fff;
+      --kelly-green: #00a651;
+      --dark-green: #007a3d;
+      --black: #000000;
+      --white: #ffffff;
+      --light-gray: #f5f5f5;
+      --dark-gray: #333333;
       --bodyFontFamily: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      --titleFontColor: #fff;
       --titleFontFamily: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      --logoURL: "none";
+      --alert-red: #ff4444;
+      --warning-orange: #ff8800;
     }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      color: var(--bodyFontColor);
       font-family: var(--bodyFontFamily);
       height: 100vh;
       width: 100vw;
-      background: radial-gradient(
-        at center,
-        #cf7f3f 6%,
-        #633763 29%,
-        #4d2d4d 33%,
-        #201520 44%,
-        #171721 55%,
-        #1f1f47 66%,
-        #151518 100%
-      );
-      font-size: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      background: linear-gradient(135deg, var(--kelly-green) 0%, var(--dark-green) 50%, var(--black) 100%);
+      color: var(--white);
       overflow: hidden;
-      margin: 0;
-      padding: 0;
     }
-    h1, h2, h3, h4, h5, h6 {
-      color: var(--titleFontColor);
-      font-family: var(--titleFontFamily);
-    }
+
     .content-container, .idle-container {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
       height: 100vh;
       width: 100vw;
       position: relative;
       opacity: 0;
-      transition: opacity 1s ease-in-out;
-      background: none;
+      transition: opacity 0.8s ease-in-out;
     }
+
     .content-container.fade-in,
     .idle-container.fade-in {
       opacity: 1;
     }
+
     .content-container.fade-out,
     .idle-container.fade-out {
       opacity: 0;
     }
-    .idle-greeting {
-      font-size: 8rem;
-      margin: 0 0 4rem 0;
-      color: var(--titleFontColor);
-      font-weight: 300;
+
+    /* Header Section */
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--kelly-green);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-placeholder {
+      width: 60px;
+      height: 60px;
+      background: var(--white);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--kelly-green);
+      font-size: 0.8rem;
       text-align: center;
+      line-height: 1.2;
+    }
+
+    .company-name {
+      font-family: var(--titleFontFamily);
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .welcome-text {
+      font-family: var(--titleFontFamily);
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--white);
+      opacity: 0.9;
+    }
+
+    /* Idle Screen Styles */
+    .idle-container {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .idle-greeting {
+      font-size: 4rem;
+      margin-bottom: 2rem;
+      color: var(--white);
+      font-weight: 300;
       font-family: var(--titleFontFamily);
       letter-spacing: -0.02em;
     }
+
     .clock-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1rem;
     }
+
     .time {
-      font-size: 6rem;
+      font-size: 3.5rem;
       font-weight: 200;
-      color: var(--titleFontColor);
-      text-align: center;
+      color: var(--white);
       font-family: var(--titleFontFamily);
       letter-spacing: -0.01em;
     }
+
     .date {
-      font-size: 2.5rem;
+      font-size: 1.8rem;
       font-weight: 300;
-      color: var(--bodyFontColor);
-      text-align: center;
+      color: var(--white);
       font-family: var(--bodyFontFamily);
       opacity: 0.8;
-      letter-spacing: 0.01em;
     }
-    h2.intro-text {
-      position: absolute;
-      top: 25vh;
-      left: 50%;
-      transform: translateX(-50%);
-      width: auto;
-      max-width: 90vw;
+
+    /* Welcome Screen Styles */
+    .welcome-large {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+      text-align: center;
     }
-    h1.data-number {
-      position: absolute;
-      top: 45vh;
-      left: 50%;
-      transform: translateX(-50%);
-      width: auto;
-      max-width: 90vw;
-      word-wrap: break-word;
-      font-size: 8rem;
-      margin: 2rem 0;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-    h3.door-info {
-      position: absolute;
-      top: 65vh;
-      left: 50%;
-      transform: translateX(-50%);
-      width: auto;
-      max-width: 90vw;
-      font-size: 2.5rem;
-      color: var(--bodyFontColor);
-      opacity: 0.8;
-      margin: 0;
+
+    .welcome-title {
+      font-size: 3rem;
       font-weight: 300;
-      letter-spacing: 0.01em;
+      margin-bottom: 1rem;
+      color: var(--white);
+      font-family: var(--titleFontFamily);
     }
-    @media screen and (max-width: 768px) {
-      .idle-greeting { font-size: 6rem; }
-      .time { font-size: 4.5rem; }
-      .date { font-size: 2rem; }
-      h1.data-number { font-size: 6rem; }
-      h3.door-info { font-size: 2rem; }
+
+    .welcome-name {
+      font-size: 5rem;
+      font-weight: 600;
+      color: var(--kelly-green);
+      font-family: var(--titleFontFamily);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
-    @media screen and (max-width: 480px) {
-      .idle-greeting { font-size: 4.5rem; }
-      .time { font-size: 3.5rem; }
-      .date { font-size: 1.5rem; }
-      h1.data-number { font-size: 4rem; }
-      h3.door-info { font-size: 1.2rem; }
+
+    /* Content Screen Styles */
+    .content-body {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section-title {
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--kelly-green);
+      margin-bottom: 1.5rem;
+      font-family: var(--titleFontFamily);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--kelly-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--white);
+    }
+
+    /* Job Cards */
+    .job-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      transform: translateX(-50px);
+      animation: slideInFromLeft 0.6s ease-out forwards;
+    }
+
+    .job-card:nth-child(even) {
+      animation: slideInFromRight 0.6s ease-out forwards;
+    }
+
+    .job-card:nth-child(2) { animation-delay: 0.1s; }
+    .job-card:nth-child(3) { animation-delay: 0.2s; }
+    .job-card:nth-child(4) { animation-delay: 0.3s; }
+    .job-card:nth-child(5) { animation-delay: 0.4s; }
+    .job-card:nth-child(6) { animation-delay: 0.5s; }
+
+    .job-card-content {
+      display: flex;
+      height: 100%;
+    }
+
+    .job-time-bar {
+      width: 80px;
+      background: var(--kelly-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 0;
+      position: relative;
+    }
+
+    .job-time {
+      writing-mode: vertical-lr;
+      text-orientation: mixed;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--white);
+      text-align: center;
+      transform: rotate(180deg);
+    }
+
+    .job-details {
+      flex: 1;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .job-customer {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .job-location {
+      font-size: 1.2rem;
+      color: var(--white);
+      opacity: 0.8;
+      margin-bottom: 0.8rem;
+    }
+
+    .job-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .job-number {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--kelly-green);
+      background: rgba(0, 166, 81, 0.2);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+    }
+
+    .job-category {
+      font-size: 1.1rem;
+      color: var(--white);
+      opacity: 0.7;
+    }
+
+    .job-status {
+      font-size: 1.1rem;
+      color: var(--white);
+      opacity: 0.9;
+    }
+
+    /* Parts Transfer Cards */
+    .parts-card {
+      background: rgba(255, 136, 0, 0.1);
+      border: 2px solid var(--warning-orange);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      transform: translateY(-30px);
+      animation: slideInFromTop 0.6s ease-out forwards;
+    }
+
+    .parts-card:nth-child(2) { animation-delay: 0.1s; }
+    .parts-card:nth-child(3) { animation-delay: 0.2s; }
+
+    .parts-description {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .parts-job {
+      font-size: 1.2rem;
+      color: var(--warning-orange);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .parts-notes {
+      font-size: 1.1rem;
+      color: var(--white);
+      opacity: 0.8;
+      font-style: italic;
+    }
+
+    /* Messages Cards */
+    .message-card {
+      background: rgba(0, 166, 81, 0.2);
+      border: 2px solid var(--kelly-green);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0;
+      transform: translateX(50px);
+      animation: slideInFromRight 0.6s ease-out forwards;
+    }
+
+    .message-card:nth-child(2) { animation-delay: 0.1s; }
+    .message-card:nth-child(3) { animation-delay: 0.2s; }
+
+    .message-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--kelly-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--white);
+    }
+
+    .message-text {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--white);
+      flex: 1;
+    }
+
+    /* Animations */
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInFromRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInFromTop {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+
+    /* Alert Styles */
+    .parts-alert {
+      background: var(--alert-red);
+      color: var(--white);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-align: center;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Responsive Design for Portrait Mode */
+    @media screen and (max-width: 768px) and (orientation: portrait) {
+      .header-section {
+        padding: 1rem;
+      }
+      
+      .company-name {
+        font-size: 1.4rem;
+      }
+      
+      .welcome-text {
+        font-size: 1.1rem;
+      }
+      
+      .idle-greeting {
+        font-size: 3rem;
+      }
+      
+      .time {
+        font-size: 2.8rem;
+      }
+      
+      .date {
+        font-size: 1.4rem;
+      }
+      
+      .welcome-name {
+        font-size: 3.5rem;
+      }
+      
+      .job-time-bar {
+        width: 60px;
+      }
+      
+      .job-time {
+        font-size: 0.9rem;
+      }
+      
+      .job-customer {
+        font-size: 1.3rem;
+      }
+      
+      .section-title {
+        font-size: 1.8rem;
+      }
+    }
+
+    /* No Jobs Message */
+    .no-jobs {
+      text-align: center;
+      padding: 3rem;
+      color: var(--white);
+      opacity: 0.7;
+      font-size: 1.4rem;
+    }
+
+    /* Welcome transition animations */
+    .welcome-shrink {
+      animation: shrinkToHeader 0.8s ease-out forwards;
+    }
+
+    @keyframes shrinkToHeader {
+      from {
+        transform: scale(1) translateY(0);
+      }
+      to {
+        transform: scale(0.4) translateY(-50vh);
+      }
     }
   </style>
 </head>
 <body>
   <div id="root"></div>
-<script>
-  // Firebase config here...
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "freeflow-internal-projects.firebaseapp.com",
-    databaseURL: "https://freeflow-internal-projects-default-rtdb.firebaseio.com",
-    projectId: "freeflow-internal-projects",
-    storageBucket: "freeflow-internal-projects.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  let fadeTimeout = null;
-  let idleTimeout = null;
-  let clockInterval = null;
-  let currentScreenId = null;
-  let dashboardTimeout = null;
-
-  // ...getScreenIdentifier, setupScreenId, getTimeBasedGreeting, formatTime, formatDate as before...
-
-  const getScreenIdentifier = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('screenId')) return urlParams.get('screenId');
-    const storedScreenId = localStorage.getItem('screencloudScreenId');
-    if (storedScreenId) return storedScreenId;
-    return null;
-  };
-
-  const setupScreenId = () => {
-    const setupDiv = document.createElement('div');
-    setupDiv.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.9); color: white; display: flex;
-      flex-direction: column; justify-content: center; align-items: center;
-      font-family: sans-serif; z-index: 9999;`;
-    setupDiv.innerHTML = `
-      <h1>Screen Setup Required</h1>
-      <p>Please select this screen's location:</p>
-      <button onclick="setScreenId('front_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Front Door</button>
-      <button onclick="setScreenId('back_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Back Door</button>
-      <button onclick="setScreenId('side_entrance')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Side Entrance</button>
-      <button onclick="setScreenId('main_lobby')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Main Lobby</button>
-    `;
-    document.body.appendChild(setupDiv);
-    window.setScreenId = (screenId) => {
-      localStorage.setItem('screencloudScreenId', screenId);
-      currentScreenId = screenId;
-      document.body.removeChild(setupDiv);
-      console.log('Screen ID set to:', screenId);
-      initializeApp();
-    };
-  };
-
-  const getTimeBasedGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return "Good Morning";
-    if (hour >= 12 && hour < 17) return "Good Afternoon";
-    if (hour >= 17 && hour < 21) return "Good Evening";
-    return "Good Night";
-  };
-  const formatTime = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-  const formatDate = () => new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-  // --- Idle message ---
-  const showIdleMessage = () => {
-    if (dashboardTimeout) clearTimeout(dashboardTimeout);
-    const updateClock = () => {
-      ReactDOM.render(
-        React.createElement('div', { id: "inner-root", className: "idle-container fade-in" },
-          React.createElement('h1', { className: "idle-greeting" }, getTimeBasedGreeting()),
-          React.createElement('div', { className: "clock-container" },
-            React.createElement('div', { className: "time" }, formatTime()),
-            React.createElement('div', { className: "date" }, formatDate())
-          )
-        ),
-        document.getElementById("root")
-      );
-    };
-    updateClock();
-    clockInterval = setInterval(updateClock, 1000);
-  };
-
-  // --- Message for this screen? ---
-  const isMessageForThisScreen = (data) => {
-    if (!data.targetScreen) return true;
-    if (data.targetScreen === currentScreenId) return true;
-    if (data.targetScreenName && currentScreenId) return false;
-    return false;
-  };
-
-  // --- Welcome render (shows immediately on scan) ---
-  const renderWelcome = (data) => {
-    ReactDOM.render(
-      React.createElement('div', { id: "inner-root", className: "content-container fade-in" },
-        React.createElement('h2', { className: "template-text intro-text" }, "Welcome"),
-        React.createElement('h1', { className: "template-text data-number" },
-          data ? (data.name || data.user || data.number || "Guest") : "Guest"
-        ),
-        (data.doorName || data.door) && React.createElement('h3', { className: "template-text door-info" }, data.doorName || data.door)
-      ),
-      document.getElementById("root")
-    );
-    if (fadeTimeout) clearTimeout(fadeTimeout);
-    if (idleTimeout) clearTimeout(idleTimeout);
-    if (clockInterval) clearInterval(clockInterval);
-  };
-
-  // --- Technician dashboard render ---
-  const renderDashboard = (dashboard, timeout = 35000) => {
-    // --- parse and order jobs by start time ---
-    let jobs = [];
-    if (dashboard.dispatch && dashboard.dispatch.ASSIGNED) {
-      const allVisits = Object.values(dashboard.dispatch.ASSIGNED)
-        .flatMap(obj => Object.values(obj));
-      jobs = allVisits.filter(j => j.jobNumber && j.jobStartDate)
-        .map(j => ({
-          ...j,
-          // try to build a sort-able date/time value from startMin or jobStartDate + startMin
-          startSort: (() => {
-            // format: "2025-07-10", startMin: 500 (minutes from midnight)
-            let date = j.jobStartDate;
-            let mins = parseInt(j.startMin || 0, 10);
-            if (!date || isNaN(mins)) return Number.MAX_SAFE_INTEGER;
-            let [year, month, day] = date.split('-').map(x => parseInt(x, 10));
-            return new Date(year, month - 1, day, Math.floor(mins / 60), mins % 60).getTime();
-          })()
-        }))
-        .sort((a, b) => a.startSort - b.startSort);
-    }
-
-    // --- parts transfers ---
-    const parts = dashboard.parts_transfer || [];
-
-    // --- messages ---
-    const messages = dashboard.messages || [];
-
-    // --- animate in the dashboard ---
-    ReactDOM.render(
-      React.createElement('div', { className: "content-container fade-in", style: { animation: "fadein-slidein 0.8s" } },
-        React.createElement('h2', { className: "template-text intro-text" }, "Today's Schedule"),
-        jobs.length ? (
-          React.createElement('div', { style: { width: "96vw", maxWidth: 900, margin: "0 auto", marginTop: "2rem", marginBottom: "2rem" } },
-            jobs.map(j =>
-              React.createElement('div', {
-                key: j.jobNumber + j.jobStartDate,
-                style: {
-                  background: "#fff2",
-                  borderRadius: 12,
-                  padding: "1.5rem 2rem",
-                  marginBottom: 14,
-                  boxShadow: "0 2px 16px #0001",
-                  borderLeft: "10px solid " + (j.background || "#ccc")
-                }
-              },
-                React.createElement('div', { style: { fontWeight: 700, fontSize: "1.5rem", color: "#fff" } }, j.customerName || j.customer_name || "—"),
-                React.createElement('div', { style: { fontSize: "1.1rem", color: "#fff", marginBottom: 6 } },
-                  [j.city_state, j.postal_code].filter(Boolean).join(" · ")
-                ),
-                React.createElement('div', { style: { fontSize: "1rem", color: "#fff" } },
-                  j.job_category || "No category"
-                ),
-                React.createElement('div', { style: { fontSize: "1.4rem", fontWeight: 500, margin: "6px 0", color: "#ffeb3b" } },
-                  `Job #${j.jobNumber}`
-                ),
-                React.createElement('div', { style: { fontSize: "1.1rem", color: "#eee" } },
-                  "Start: " + (j.title_head_weekly || (j.jobStartDate ? `${j.jobStartDate}` : ''))
-                ),
-                React.createElement('div', { style: { fontSize: "1.1rem", color: "#eee" } },
-                  "Status: " + (j.jobStatusName || j.code || "—")
-                )
-              )
-            )
-          )
-        ) : React.createElement('div', { style: { color: "#fff", margin: "2rem" } }, "No jobs scheduled."),
-        parts.length ? (
-          React.createElement('div', { style: { margin: "2rem auto 0 auto", width: "90vw", maxWidth: 700 } },
-            React.createElement('h2', { style: { color: "#ff8a00", fontSize: "2rem" } }, "Parts to Transfer"),
-            parts.map(p =>
-              React.createElement('div', {
-                key: p.transfer_id,
-                style: { background: "#222b", borderRadius: 10, padding: "1.1rem 1.5rem", color: "#fff", marginBottom: 10 }
-              },
-                React.createElement('div', { style: { fontWeight: 600 } }, p.description),
-                React.createElement('div', null, "For Job: " + (p.job_number || "")),
-                p.notes && React.createElement('div', { style: { color: "#ffd700", marginTop: 2 } }, p.notes)
-              )
-            )
-          )
-        ) : null,
-        messages.length ? (
-          React.createElement('div', { style: { margin: "2rem auto 0 auto", width: "90vw", maxWidth: 700 } },
-            React.createElement('h2', { style: { color: "#62e5a1", fontSize: "2rem" } }, "Messages"),
-            messages.map(m =>
-              React.createElement('div', {
-                key: m.messageId,
-                style: { background: "#205940", borderRadius: 10, padding: "1.2rem 1.5rem", color: "#fff", marginBottom: 12, fontWeight: 500, fontSize: "1.3rem", display: "flex", alignItems: "center", gap: 20 }
-              },
-                m.message_icon && React.createElement('img', { src: m.message_icon, style: { width: 48, height: 48, marginRight: 16, borderRadius: "50%" } }),
-                React.createElement('span', null, m.message_text)
-              )
-            )
-          )
-        ) : null
-      ),
-      document.getElementById("root")
-    );
-
-    // Clean up previous timeouts
-    if (fadeTimeout) clearTimeout(fadeTimeout);
-    if (idleTimeout) clearTimeout(idleTimeout);
-    if (clockInterval) clearInterval(clockInterval);
-
-    // Fade back to idle after timeout
-    dashboardTimeout = setTimeout(showIdleMessage, timeout);
-  };
-
-  // ---- Main App Init ----
-  const initializeApp = () => {
-    showIdleMessage();
-
-    db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
-      const data = snapshot.val();
-      console.log('Inbound RTDB event data:', data);
-      const name = data.name || data.user || "Guest";
-      const doorName = data.doorName || data.door || "Unknown Door";
-      const eventType = data.event || "entry";
-      const timeout = data.timeout || 30000;
-      const eventData = { ...data, name, doorName, eventType, timeout };
-
-      // 1. Show welcome message immediately
-      renderWelcome(eventData);
-
-      // 2. If sf_id present, call webhook and display dashboard
-      if (data.sf_id) {
-        try {
-          const resp = await fetch(`https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=${encodeURIComponent(data.sf_id)}`);
-          if (resp.ok) {
-            const dashboard = await resp.json();
-            setTimeout(() => renderDashboard(dashboard, 35000), 1300); // slight delay for smooth transition
-          }
-        } catch (e) {
-          console.error("Error fetching dashboard from Make.com:", e);
-        }
-      }
-    });
-    console.log('App initialized, waiting for Firebase data pushes...');
-  };
-
-  window.onload = () => {
-    currentScreenId = getScreenIdentifier();
-    if (currentScreenId) {
-      console.log('Screen ID determined:', currentScreenId);
-      initializeApp();
-    } else {
-      console.log('Screen ID not found, showing setup');
-      setupScreenId();
-    }
-  };
-
-  // --- Animation style ---
-  const style = document.createElement('style');
-  style.innerHTML = `
-  @keyframes fadein-slidein {
-    0% { opacity: 0; transform: translateY(40px) scale(.98);}
-    100% { opacity: 1; transform: translateY(0) scale(1);}
-  }
-  .fade-in { animation: fadein-slidein 1s; }
-  `;
-  document.head.appendChild(style);
-
-</script>
-</body>
-</html>
+  
+  <!-- Audio element for parts alert -->
+  <audio id="partsAlert" preload="auto">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoU
