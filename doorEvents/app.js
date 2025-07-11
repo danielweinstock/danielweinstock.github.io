@@ -66,7 +66,7 @@ function playPartsAlert() {
           console.log('Second audio play failed');
         });
       }
-    }, 1000); // 1 second delay between plays
+    }, 8000); // 8 second delay between plays
     
   } catch (error) {
     console.log('Audio not supported, using visual alert');
