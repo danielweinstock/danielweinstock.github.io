@@ -1,4 +1,10 @@
-const e = React.createElement;
+function formatJobTime(startMin) {
+  if (!startMin) return '';
+  const mins = parseInt(startMin, 10);
+  const hours = Math.floor(mins / 60);
+  const minutes = mins % 60;
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours === 0 ? 12 :const e = React.createElement;
 const useState = React.useState;
 const useEffect = React.useEffect;
 
@@ -10,7 +16,67 @@ const firebaseConfig = {
   storageBucket: "freeflow-internal-projects.appspot.com",
   messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
   appId: "YOUR_APP_ID"
-};
+  const partsCards = parts.length > 0 ? 
+    parts.map(function(part, index) {
+      const animationDelay = (index * 0.3) + 's';
+      return e('div', {
+        key: (part.transfer_id || 'part') + '-' + index,
+        className: 'parts-card',
+        style: { animationDelay: animationDelay }
+      },
+        e('div', { className: 'parts-description' }, part.description || 'Part description'),
+        e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
+        part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
+      );
+    }) : [];
+
+  const messageCards = messages.length > 0 ?
+    messages.map(function(message, index) {
+      const animationDelay = (index * 0.3) + 's';
+      return e('div', {
+        key: (message.messageId || 'message') + '-' + index,
+        className: 'message-card',
+        style: { animationDelay: animationDelay }
+      },
+        e('div', { className: 'message-icon' }, '📢'),
+        e('div', { className: 'message-text' }, message.message_text || 'No message text')
+      );
+    }) : [];
+
+  const contentElements = [
+    e('div', { className: 'section', key: 'jobs-section' },
+      e('h2', { className: 'section-title' },
+        e('div', { className: 'section-icon' }, '📅'),
+        'Today\'s Schedule'
+      ),
+      jobCards
+    )
+  ];
+
+  if (parts.length > 0) {
+    contentElements.push(
+      e('div', { className: 'section', key: 'parts-section' },
+        e('div', { className: 'parts-alert' }, '🚨 PARTS TRANSFER REQUIRED 🚨'),
+        e('h2', { className: 'section-title' },
+          e('div', { className: 'section-icon' }, '📦'),
+          'Parts to Transfer'
+        ),
+        partsCards
+      )
+    );
+  }
+
+  if (messages.length > 0) {
+    contentElements.push(
+      e('div', { className: 'section', key: 'messages-section' },
+        e('h2', { className: 'section-title' },
+          e('div', { className: 'section-icon' }, '💬'),
+          'Messages'
+        ),
+        messageCards
+      )
+    );
+  };
 
 let db = null;
 
@@ -42,25 +108,35 @@ function getScreenIdentifier() {
 }
 
 function playPartsAlert() {
+  // Use HTML5 Audio instead of Web Audio API to avoid user gesture requirement
   try {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    // Create a simple beep using data URL
+    const audioData = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoU';
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    const audio = new Audio(audioData);
+    audio.volume = 0.3;
     
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 1);
+    // Try to play, but don't throw error if it fails due to autoplay policy
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(function(error) {
+        console.log('Audio autoplay prevented by browser policy');
+        // Instead of audio, add a visual pulsing alert
+        addVisualAlert();
+      });
+    }
   } catch (error) {
-    console.log('Audio not supported');
+    console.log('Audio not supported, using visual alert');
+    addVisualAlert();
   }
+}
+
+function addVisualAlert() {
+  // Add a visual flash effect to the parts alert
+  const alertElements = document.querySelectorAll('.parts-alert');
+  alertElements.forEach(function(element) {
+    element.style.animation = 'pulse 0.5s infinite';
+  });
 }
 
 function getTimeBasedGreeting() {
@@ -212,6 +288,11 @@ function Dashboard(props) {
     if (parts.length > 0) {
       playPartsAlert();
     }
+    
+    // Animate job cards after dashboard renders
+    setTimeout(function() {
+      animateJobCards();
+    }, 100);
   }, [parts.length]);
 
   const jobCards = jobs.length > 0 ? 
@@ -219,68 +300,6 @@ function Dashboard(props) {
       return e(JobCard, { job: job, index: index, key: (job.jobNumber || 'job') + '-' + index });
     }) : 
     [e('div', { className: 'no-jobs', key: 'no-jobs' }, 'No jobs scheduled for today.')];
-
-  const partsCards = parts.length > 0 ? 
-    parts.map(function(part, index) {
-      const animationDelay = (index * 0.2) + 's';
-      return e('div', {
-        key: (part.transfer_id || 'part') + '-' + index,
-        className: 'parts-card',
-        style: { animationDelay: animationDelay }
-      },
-        e('div', { className: 'parts-description' }, part.description || 'Part description'),
-        e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
-        part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
-      );
-    }) : [];
-
-  const messageCards = messages.length > 0 ?
-    messages.map(function(message, index) {
-      const animationDelay = (index * 0.2) + 's';
-      return e('div', {
-        key: (message.messageId || 'message') + '-' + index,
-        className: 'message-card',
-        style: { animationDelay: animationDelay }
-      },
-        e('div', { className: 'message-icon' }, '📢'),
-        e('div', { className: 'message-text' }, message.message_text || 'No message text')
-      );
-    }) : [];
-
-  const contentElements = [
-    e('div', { className: 'section', key: 'jobs-section' },
-      e('h2', { className: 'section-title' },
-        e('div', { className: 'section-icon' }, '📅'),
-        'Today\'s Schedule'
-      ),
-      jobCards
-    )
-  ];
-
-  if (parts.length > 0) {
-    contentElements.push(
-      e('div', { className: 'section', key: 'parts-section' },
-        e('div', { className: 'parts-alert' }, '🚨 PARTS TRANSFER REQUIRED 🚨'),
-        e('h2', { className: 'section-title' },
-          e('div', { className: 'section-icon' }, '📦'),
-          'Parts to Transfer'
-        ),
-        partsCards
-      )
-    );
-  }
-
-  if (messages.length > 0) {
-    contentElements.push(
-      e('div', { className: 'section', key: 'messages-section' },
-        e('h2', { className: 'section-title' },
-          e('div', { className: 'section-icon' }, '💬'),
-          'Messages'
-        ),
-        messageCards
-      )
-    );
-  }
 
   return e('div', { className: 'content-container fade-in' },
     e('div', { className: 'header-section' },
@@ -292,6 +311,16 @@ function Dashboard(props) {
     ),
     e('div', { className: 'content-body' }, contentElements)
   );
+}
+
+// Function to animate job cards sequentially
+function animateJobCards() {
+  const jobCards = document.querySelectorAll('.job-card');
+  jobCards.forEach(function(card, index) {
+    setTimeout(function() {
+      card.classList.add('animate-in');
+    }, index * 500); // 500ms delay between each card
+  });
 }
 
 function SetupScreen() {
