@@ -164,10 +164,14 @@ function WelcomeMessage(props) {
   const lastName = data.user_lname || data.lname || '';
   const fullName = data.user || (firstName + ' ' + lastName).trim() || "Guest";
   
+  // Show door name if "All Doors" is selected
+  const showDoorName = currentScreenId === 'all_doors' && data.door;
+  
   return e('div', { className: 'content-container fade-in' },
     e('div', { className: 'welcome-large' },
       e('h2', { className: 'welcome-title' }, 'Welcome'),
-      e('h1', { className: 'welcome-name' }, fullName)
+      e('h1', { className: 'welcome-name' }, fullName),
+      showDoorName ? e('p', { className: 'welcome-door' }, 'at ' + data.door) : null
     )
   );
 }
@@ -402,20 +406,20 @@ function SetupScreen() {
     e('p', null, 'Please select this screen\'s location:'),
     e('button', { 
       className: 'setup-button',
-      onClick: function() { handleSetScreenId('front_door'); }
-    }, 'Front Door'),
+      onClick: function() { handleSetScreenId('warehouse_door'); }
+    }, 'Warehouse Door'),
     e('button', { 
       className: 'setup-button',
-      onClick: function() { handleSetScreenId('back_door'); }
-    }, 'Back Door'),
+      onClick: function() { handleSetScreenId('main_entrance'); }
+    }, 'Main Entrance'),
     e('button', { 
       className: 'setup-button',
-      onClick: function() { handleSetScreenId('side_entrance'); }
-    }, 'Side Entrance'),
+      onClick: function() { handleSetScreenId('freeflow_office'); }
+    }, 'Freeflow Office'),
     e('button', { 
       className: 'setup-button',
-      onClick: function() { handleSetScreenId('main_lobby'); }
-    }, 'Main Lobby')
+      onClick: function() { handleSetScreenId('all_doors'); }
+    }, 'All Doors')
   );
 }
 
@@ -443,10 +447,36 @@ function setupScreenId() {
   ReactDOM.render(e(SetupScreen), document.getElementById("root"));
 }
 
-function isMessageForThisScreen(data) {
-  if (!data.targetScreen) return true;
-  if (data.targetScreen === currentScreenId) return true;
-  if (data.targetScreenName && currentScreenId) return false;
+function hasUsableData(dashboard) {
+  // Check if there's any usable data to display
+  const hasJobs = dashboard.dispatch && 
+                  dashboard.dispatch.ASSIGNED && 
+                  Object.keys(dashboard.dispatch.ASSIGNED).length > 0;
+  
+  const hasParts = dashboard.parts_transfer && dashboard.parts_transfer.length > 0;
+  const hasMessages = dashboard.messages && dashboard.messages.length > 0;
+  
+  return hasJobs || hasParts || hasMessages;
+}
+  // If this screen is set to "all_doors", show all events
+  if (currentScreenId === 'all_doors') return true;
+  
+  // If no door specified in the event, don't show it
+  if (!data.door) return false;
+  
+  // Check if the door matches this screen's configuration
+  const doorMapping = {
+    'warehouse_door': ['Warehouse Door', 'warehouse_door'],
+    'main_entrance': ['Main Entrance', 'main_entrance'],
+    'freeflow_office': ['Freeflow Office', 'freeflow_office']
+  };
+  
+  if (doorMapping[currentScreenId]) {
+    return doorMapping[currentScreenId].some(function(doorName) {
+      return data.door.toLowerCase() === doorName.toLowerCase();
+    });
+  }
+  
   return false;
 }
 
@@ -484,9 +514,16 @@ function initializeApp() {
           if (resp.ok) {
             const dashboard = await resp.json();
             dashboard.userPayload = eventData;
-            setTimeout(function() {
-              renderDashboard(dashboard, 35000);
-            }, 1500);
+            
+            // Check if there's usable data to display
+            if (hasUsableData(dashboard)) {
+              setTimeout(function() {
+                renderDashboard(dashboard, 30000);
+              }, 1500);
+            } else {
+              console.log('No usable data in dashboard, staying on welcome screen');
+              setTimeout(showIdleMessage, 10000); // 10 second timeout for no data
+            }
           } else {
             console.error('Failed to fetch dashboard data');
             setTimeout(showIdleMessage, timeout);
