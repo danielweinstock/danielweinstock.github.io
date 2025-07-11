@@ -43,18 +43,31 @@ function getScreenIdentifier() {
 
 function playPartsAlert() {
   try {
-    const audioData = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoUXrTp66hVFApGn+DyvmEYBjuByvLGbCIELH7J8N2QQAoU';
+    // Play parts-alert.mp3 twice
+    const audio1 = new Audio('parts-alert.mp3');
+    audio1.volume = 0.7;
     
-    const audio = new Audio(audioData);
-    audio.volume = 0.3;
-    
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(function(error) {
+    // Play first time immediately
+    const playPromise1 = audio1.play();
+    if (playPromise1 !== undefined) {
+      playPromise1.catch(function(error) {
         console.log('Audio autoplay prevented by browser policy');
         addVisualAlert();
       });
     }
+    
+    // Play second time after a short delay
+    setTimeout(function() {
+      const audio2 = new Audio('parts-alert.mp3');
+      audio2.volume = 0.7;
+      const playPromise2 = audio2.play();
+      if (playPromise2 !== undefined) {
+        playPromise2.catch(function(error) {
+          console.log('Second audio play failed');
+        });
+      }
+    }, 1000); // 1 second delay between plays
+    
   } catch (error) {
     console.log('Audio not supported, using visual alert');
     addVisualAlert();
