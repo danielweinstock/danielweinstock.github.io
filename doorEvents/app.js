@@ -162,7 +162,7 @@ function JobCard(props) {
         style: { backgroundColor: backgroundColor }
       },
         e('div', { className: 'job-time' }, formatJobTime(job.startMin)),
-        e('div', { className: 'job-number' }, 'JOB #' + (job.jobNumber || 'N/A'))
+        e('div', { className: 'job-number' }, job.jobNumber || 'N/A')
       ),
       e('div', { className: 'job-details' },
         e('div', { className: 'job-customer' }, job.customerName || job.customer_name || '—'),
@@ -247,10 +247,17 @@ function Dashboard(props) {
         className: 'parts-card',
         style: { animationDelay: animationDelay }
       },
-        e('div', { className: 'parts-description' }, part.description || 'Part description'),
-        part.bin ? e('div', { className: 'parts-bin' }, 'BIN: ' + part.bin) : null,
-        e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
-        part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
+        e('div', { className: 'parts-card-content' },
+          e('div', { className: 'parts-bin-bar' },
+            e('div', { className: 'parts-bin' }, part.bin || 'N/A'),
+            e('div', { className: 'parts-bin-label' }, 'BIN')
+          ),
+          e('div', { className: 'parts-details' },
+            e('div', { className: 'parts-description' }, part.description || 'Part description'),
+            e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
+            part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
+          )
+        )
       );
     }) : [];
 
