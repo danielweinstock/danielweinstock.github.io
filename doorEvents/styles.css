@@ -1,16 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Poppins:wght@200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 :root {
   --kelly-green: #00a651;
   --dark-green: #007a3d;
+  --light-green: #e8f5e8;
   --black: #000000;
   --white: #ffffff;
-  --light-gray: #f5f5f5;
-  --dark-gray: #333333;
+  --gray-50: #f8f9fa;
+  --gray-100: #f1f3f4;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-700: #495057;
+  --gray-800: #343a40;
+  --gray-900: #212529;
   --bodyFontFamily: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --titleFontFamily: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --alert-red: #ff4444;
-  --warning-orange: #ff8800;
+  --titleFontFamily: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --alert-red: #dc3545;
+  --warning-orange: #fd7e14;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 
 * {
@@ -23,9 +32,11 @@ body {
   font-family: var(--bodyFontFamily);
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, var(--kelly-green) 0%, var(--dark-green) 50%, var(--black) 100%);
-  color: var(--white);
+  background: var(--gray-50);
+  color: var(--gray-900);
   overflow: hidden;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 .content-container, .idle-container {
@@ -35,7 +46,7 @@ body {
   width: 100vw;
   position: relative;
   opacity: 0;
-  transition: opacity 0.8s ease-in-out;
+  transition: opacity 0.6s ease-in-out;
 }
 
 .content-container.fade-in,
@@ -48,72 +59,70 @@ body {
   opacity: 0;
 }
 
-/* Header Section */
+/* Header Section - Clean white header */
 .header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border-bottom: 3px solid var(--kelly-green);
-  min-height: 100px;
+  padding: 2rem 3rem;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  min-height: 120px;
+  box-shadow: var(--shadow-sm);
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .logo-placeholder {
-  width: 70px;
-  height: 70px;
-  background: var(--white);
-  border-radius: 12px;
+  width: 80px;
+  height: 80px;
+  background: var(--kelly-green);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: var(--kelly-green);
-  font-size: 0.7rem;
+  color: var(--white);
+  font-size: 0.8rem;
   text-align: center;
   line-height: 1.2;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
 }
 
 .company-name {
   font-family: var(--titleFontFamily);
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 600;
-  color: var(--white);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: var(--gray-900);
 }
 
 .welcome-text {
   font-family: var(--titleFontFamily);
-  font-size: 1.6rem;
-  font-weight: 400;
+  font-size: 1.8rem;
+  font-weight: 500;
   color: var(--kelly-green);
-  opacity: 0.9;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Idle Screen Styles */
+/* Idle Screen - Keep gradient for idle */
 .idle-container {
   justify-content: center;
   align-items: center;
   text-align: center;
+  background: linear-gradient(135deg, var(--kelly-green), var(--dark-green));
+  color: var(--white);
 }
 
 .idle-greeting {
-  font-size: 4.5rem;
+  font-size: 4rem;
   margin-bottom: 3rem;
   color: var(--white);
   font-weight: 300;
   font-family: var(--titleFontFamily);
   letter-spacing: -0.02em;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .clock-container {
@@ -124,24 +133,22 @@ body {
 }
 
 .time {
-  font-size: 4rem;
-  font-weight: 200;
-  color: var(--kelly-green);
+  font-size: 4.5rem;
+  font-weight: 300;
+  color: var(--white);
   font-family: var(--titleFontFamily);
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.02em;
 }
 
 .date {
   font-size: 2rem;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--white);
   font-family: var(--bodyFontFamily);
-  opacity: 0.8;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  opacity: 0.9;
 }
 
-/* Welcome Screen Styles */
+/* Welcome Screen - Keep gradient */
 .welcome-large {
   display: flex;
   flex-direction: column;
@@ -149,30 +156,32 @@ body {
   align-items: center;
   flex-grow: 1;
   text-align: center;
+  background: linear-gradient(135deg, var(--kelly-green), var(--dark-green));
+  color: var(--white);
 }
 
 .welcome-title {
-  font-size: 3.5rem;
-  font-weight: 300;
+  font-size: 3rem;
+  font-weight: 400;
   margin-bottom: 1.5rem;
   color: var(--white);
   font-family: var(--titleFontFamily);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
 }
 
 .welcome-name {
-  font-size: 6rem;
-  font-weight: 600;
-  color: var(--kelly-green);
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--white);
   font-family: var(--titleFontFamily);
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   line-height: 1.1;
 }
 
-/* Content Screen Styles */
+/* Content Screen - Clean white background */
 .content-body {
   flex-grow: 1;
-  padding: 2rem;
+  padding: 3rem;
+  background: var(--gray-50);
   overflow-y: auto;
 }
 
@@ -181,194 +190,193 @@ body {
 }
 
 .section-title {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 600;
-  color: var(--kelly-green);
+  color: var(--gray-900);
   margin-bottom: 2rem;
   font-family: var(--titleFontFamily);
   display: flex;
   align-items: center;
   gap: 1rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .section-icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: var(--kelly-green);
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   color: var(--white);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Job Cards */
+/* Job Cards - COMPLETELY REDESIGNED */
 .job-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--white);
   border-radius: 20px;
   margin-bottom: 2rem;
   overflow: hidden;
-  border: 2px solid rgba(0, 166, 81, 0.3);
+  border: 1px solid var(--gray-200);
   transition: all 0.3s ease;
-  backdrop-filter: blur(15px);
   opacity: 0;
-  transform: translateX(-80px);
-  animation: slideInFromLeft 0.8s ease-out forwards;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transform: translateX(-60px);
+  box-shadow: var(--shadow);
 }
 
-.job-card:nth-child(even) {
-  transform: translateX(80px);
-  animation: slideInFromRight 0.8s ease-out forwards;
+.job-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--kelly-green);
 }
 
-.job-card:nth-child(2) { animation-delay: 0.2s; }
-.job-card:nth-child(3) { animation-delay: 0.4s; }
-.job-card:nth-child(4) { animation-delay: 0.6s; }
-.job-card:nth-child(5) { animation-delay: 0.8s; }
-.job-card:nth-child(6) { animation-delay: 1.0s; }
+.job-card.animate-in {
+  animation: slideInJob 0.6s ease-out forwards;
+}
 
 .job-card-content {
   display: flex;
   height: 100%;
-  min-height: 120px;
+  min-height: 160px;
 }
 
 .job-time-bar {
-  width: 90px;
-  background: linear-gradient(135deg, var(--kelly-green), var(--dark-green));
+  width: 150px;
+  background: var(--kelly-green);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 0;
+  padding: 2rem 1rem;
   position: relative;
 }
 
 .job-time {
-  writing-mode: vertical-lr;
-  text-orientation: mixed;
-  font-size: 1.3rem;
+  font-size: 2.2rem;
   font-weight: 700;
   color: var(--white);
   text-align: center;
-  transform: rotate(180deg);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.01em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.job-time-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--white);
+  text-align: center;
+  opacity: 0.9;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .job-details {
   flex: 1;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .job-customer {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: var(--white);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray-900);
   margin-bottom: 0.8rem;
   font-family: var(--titleFontFamily);
+  line-height: 1.2;
 }
 
 .job-location {
   font-size: 1.3rem;
-  color: var(--white);
-  opacity: 0.8;
-  margin-bottom: 1rem;
-  font-weight: 300;
+  color: var(--gray-700);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
 }
 
 .job-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.8rem;
   flex-wrap: wrap;
   gap: 1rem;
 }
 
 .job-number {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--white);
-  background: var(--kelly-green);
-  padding: 0.5rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--kelly-green);
+  background: var(--light-green);
+  padding: 0.6rem 1.2rem;
   border-radius: 25px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--kelly-green);
 }
 
 .job-category {
-  font-size: 1.2rem;
-  color: var(--white);
-  opacity: 0.7;
-  font-weight: 400;
-}
-
-.job-status {
-  font-size: 1.2rem;
-  color: var(--kelly-green);
-  opacity: 0.9;
+  font-size: 1.1rem;
+  color: var(--gray-700);
   font-weight: 500;
+  background: var(--gray-100);
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
 }
 
-/* Parts Transfer Cards */
+/* Parts Transfer Cards - Clean design */
 .parts-card {
-  background: rgba(255, 136, 0, 0.15);
-  border: 3px solid var(--warning-orange);
+  background: var(--white);
+  border: 2px solid var(--warning-orange);
   border-radius: 20px;
-  padding: 2rem;
-  margin-bottom: 1.5rem;
-  backdrop-filter: blur(15px);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
   opacity: 0;
-  transform: translateY(-50px);
-  animation: slideInFromTop 0.8s ease-out forwards;
-  box-shadow: 0 8px 32px rgba(255, 136, 0, 0.2);
+  transform: translateY(-30px);
+  animation: slideInFromTop 0.6s ease-out forwards;
+  box-shadow: var(--shadow);
 }
 
 .parts-card:nth-child(2) { animation-delay: 0.2s; }
 .parts-card:nth-child(3) { animation-delay: 0.4s; }
 
 .parts-description {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: var(--white);
-  margin-bottom: 0.8rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 1rem;
   font-family: var(--titleFontFamily);
+  line-height: 1.2;
 }
 
 .parts-job {
   font-size: 1.3rem;
   color: var(--warning-orange);
   font-weight: 600;
-  margin-bottom: 0.8rem;
+  margin-bottom: 1rem;
 }
 
 .parts-notes {
   font-size: 1.2rem;
-  color: var(--white);
-  opacity: 0.8;
+  color: var(--gray-700);
   font-style: italic;
   line-height: 1.4;
 }
 
-/* Messages Cards */
+/* Messages Cards - Clean design */
 .message-card {
-  background: rgba(0, 166, 81, 0.2);
-  border: 3px solid var(--kelly-green);
+  background: var(--white);
+  border: 2px solid var(--kelly-green);
   border-radius: 20px;
-  padding: 2rem;
-  margin-bottom: 1.5rem;
-  backdrop-filter: blur(15px);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
   opacity: 0;
-  transform: translateX(80px);
-  animation: slideInFromRight 0.8s ease-out forwards;
-  box-shadow: 0 8px 32px rgba(0, 166, 81, 0.2);
+  transform: translateX(60px);
+  animation: slideInFromRight 0.6s ease-out forwards;
+  box-shadow: var(--shadow);
 }
 
 .message-card:nth-child(2) { animation-delay: 0.2s; }
@@ -384,23 +392,23 @@ body {
   justify-content: center;
   font-size: 1.8rem;
   color: var(--white);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
 .message-text {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 500;
-  color: var(--white);
+  color: var(--gray-900);
   flex: 1;
   line-height: 1.4;
 }
 
 /* Animations */
-@keyframes slideInFromLeft {
+@keyframes slideInJob {
   from {
     opacity: 0;
-    transform: translateX(-80px);
+    transform: translateX(-60px);
   }
   to {
     opacity: 1;
@@ -411,7 +419,7 @@ body {
 @keyframes slideInFromRight {
   from {
     opacity: 0;
-    transform: translateX(80px);
+    transform: translateX(60px);
   }
   to {
     opacity: 1;
@@ -422,7 +430,7 @@ body {
 @keyframes slideInFromTop {
   from {
     opacity: 0;
-    transform: translateY(-50px);
+    transform: translateY(-30px);
   }
   to {
     opacity: 1;
@@ -433,11 +441,9 @@ body {
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 8px 32px rgba(255, 68, 68, 0.3);
   }
   50% {
     transform: scale(1.02);
-    box-shadow: 0 12px 40px rgba(255, 68, 68, 0.5);
   }
 }
 
@@ -445,83 +451,31 @@ body {
   animation: pulse 2s infinite;
 }
 
-/* Alert Styles */
+/* Alert Styles - Clean design */
 .parts-alert {
   background: var(--alert-red);
   color: var(--white);
   padding: 1.5rem;
-  border-radius: 12px;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  font-weight: 700;
   text-align: center;
   font-size: 1.4rem;
-  animation: pulse 1.5s infinite;
-  box-shadow: 0 4px 16px rgba(255, 68, 68, 0.4);
-}
-
-/* Responsive Design for Portrait Mode */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-  .header-section {
-    padding: 1rem;
-    min-height: 80px;
-  }
-  
-  .company-name {
-    font-size: 1.6rem;
-  }
-  
-  .welcome-text {
-    font-size: 1.2rem;
-  }
-  
-  .idle-greeting {
-    font-size: 3.5rem;
-  }
-  
-  .time {
-    font-size: 3rem;
-  }
-  
-  .date {
-    font-size: 1.6rem;
-  }
-  
-  .welcome-name {
-    font-size: 4rem;
-  }
-  
-  .job-time-bar {
-    width: 70px;
-  }
-  
-  .job-time {
-    font-size: 1rem;
-  }
-  
-  .job-customer {
-    font-size: 1.5rem;
-  }
-  
-  .section-title {
-    font-size: 2rem;
-  }
-
-  .content-body {
-    padding: 1rem;
-  }
+  animation: pulse 2s infinite;
+  box-shadow: var(--shadow);
 }
 
 /* No Jobs Message */
 .no-jobs {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--white);
-  opacity: 0.7;
-  font-size: 1.6rem;
-  font-weight: 300;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--gray-700);
+  font-size: 1.4rem;
+  font-weight: 400;
+  background: var(--white);
   border-radius: 20px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border: 2px dashed var(--gray-300);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Setup screen styles */
@@ -531,8 +485,8 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.95);
-  color: white;
+  background: var(--white);
+  color: var(--gray-900);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -546,14 +500,15 @@ body {
 .setup-screen h1 {
   font-size: 3rem;
   margin-bottom: 2rem;
-  color: var(--kelly-green);
+  color: var(--gray-900);
   font-family: var(--titleFontFamily);
+  font-weight: 600;
 }
 
 .setup-screen p {
   font-size: 1.5rem;
   margin-bottom: 3rem;
-  color: var(--white);
+  color: var(--gray-700);
 }
 
 .setup-button {
@@ -567,11 +522,64 @@ body {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
+  font-family: var(--bodyFontFamily);
 }
 
 .setup-button:hover {
   background: var(--dark-green);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Responsive Design for Portrait Mode */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .header-section {
+    padding: 1.5rem;
+    min-height: 100px;
+  }
+  
+  .company-name {
+    font-size: 1.8rem;
+  }
+  
+  .welcome-text {
+    font-size: 1.4rem;
+  }
+  
+  .idle-greeting {
+    font-size: 3rem;
+  }
+  
+  .time {
+    font-size: 3.5rem;
+  }
+  
+  .date {
+    font-size: 1.6rem;
+  }
+  
+  .welcome-name {
+    font-size: 3.5rem;
+  }
+  
+  .job-time-bar {
+    width: 120px;
+  }
+  
+  .job-time {
+    font-size: 1.8rem;
+  }
+  
+  .job-customer {
+    font-size: 1.6rem;
+  }
+  
+  .section-title {
+    font-size: 1.8rem;
+  }
+
+  .content-body {
+    padding: 2rem;
+  }
 }
