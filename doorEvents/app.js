@@ -123,8 +123,11 @@ function IdleMessage() {
   }, []);
 
   return e('div', { className: 'idle-container fade-in' },
-    e('div', { className: 'idle-logo' }, 'FREEFLOW\nLOGO'),
-    e('div', { className: 'idle-company-name' }, 'Beverage Solutions Co'),
+    e('img', { 
+      className: 'idle-logo',
+      src: 'freeflow-logo-white-trans.png',
+      alt: 'Freeflow Logo'
+    }),
     e('h1', { className: 'idle-greeting' }, getTimeBasedGreeting()),
     e('div', { className: 'clock-container' },
       e('div', { className: 'time' }, time),
@@ -154,6 +157,10 @@ function JobCard(props) {
   // Use the background color from the job data, fallback to kelly green
   const backgroundColor = job.background || '#00a651';
   
+  // Build location string with street address
+  const locationParts = [job.street_addr, job.city_state, job.postal_code].filter(Boolean);
+  const locationString = locationParts.length > 0 ? locationParts.join(' • ') : 'Location TBD';
+  
   return e('div', { 
     className: 'job-card',
     id: 'job-card-' + index
@@ -168,9 +175,7 @@ function JobCard(props) {
       ),
       e('div', { className: 'job-details' },
         e('div', { className: 'job-customer' }, job.customerName || job.customer_name || '—'),
-        e('div', { className: 'job-location' }, 
-          [job.city_state, job.postal_code].filter(Boolean).join(' • ') || 'Location TBD'
-        ),
+        e('div', { className: 'job-location' }, locationString),
         e('div', { className: 'job-meta' },
           e('div', { className: 'job-status' }, job.jobStatusName || job.code || 'Scheduled'),
           e('div', { className: 'job-category' }, job.job_category || 'Service Call')
