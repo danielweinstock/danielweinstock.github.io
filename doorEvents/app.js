@@ -174,7 +174,7 @@ function JobCard(props) {
   
   // Build location string with street address
   const locationParts = [job.street_addr, job.city_state, job.postal_code].filter(Boolean);
-  const locationString = locationParts.length > 0 ? locationParts.join(' • ') : 'Location TBD';
+  const locationString = locationParts.length > 0 ? locationParts.join(' • ').toUpperCase() : 'LOCATION TBD';
   
   return e('div', { 
     className: 'job-card',
