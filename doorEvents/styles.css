@@ -172,6 +172,15 @@ body {
   text-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
+.welcome-door {
+  font-size: 4rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-family: var(--bodyFontFamily);
+  margin-top: 2rem;
+  font-style: italic;
+}
+
 /* Content Screen - Darker green gradient background */
 .content-body {
   flex-grow: 1;
