@@ -232,12 +232,13 @@ function checkAndScrollContent() {
       dashboardTimeout = null;
     }
     
-    // Calculate scroll duration based on content height (minimum 8 seconds)
-    const scrollDuration = Math.max(8000, (contentHeight / viewportHeight) * 4000);
+    // Calculate much slower scroll duration - minimum 15 seconds, scale with content
+    const scrollDistance = contentHeight - viewportHeight;
+    const scrollDuration = Math.max(15000, scrollDistance * 20); // 20ms per pixel
     
-    // Smooth scroll to bottom
+    // Smooth scroll to bottom with much slower speed
     contentBody.scrollTo({
-      top: contentHeight - viewportHeight,
+      top: scrollDistance,
       behavior: 'smooth'
     });
     
@@ -292,8 +293,8 @@ function Dashboard(props) {
     
     setTimeout(function() {
       animateJobCards();
-      // Check for overflow and start auto-scroll after animations complete
-      setTimeout(checkAndScrollContent, 2000);
+      // Wait 3 seconds after animations complete, then check for overflow and start auto-scroll
+      setTimeout(checkAndScrollContent, 3000);
     }, 100);
   }, [parts.length]);
 
