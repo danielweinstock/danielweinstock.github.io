@@ -90,36 +90,15 @@ body {
 }
 
 .idle-logo {
-  width: 120px;
-  height: 120px;
-  background: var(--white);
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  color: var(--kelly-green);
-  font-size: 0.9rem;
-  text-align: center;
-  line-height: 1.1;
-  box-shadow: var(--shadow-lg);
-  margin-bottom: 2rem;
-  border: 3px solid var(--kelly-green);
-}
-
-.idle-company-name {
-  font-family: var(--titleFontFamily);
-  font-size: 2.2rem;
-  font-weight: 600;
-  color: var(--gray-900);
-  margin-bottom: 3rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  width: 300px;
+  height: 65px;
+  margin-bottom: 4rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 .idle-greeting {
-  font-size: 6rem;
-  margin-bottom: 3rem;
+  font-size: 8rem;
+  margin-bottom: 4rem;
   color: var(--gray-900);
   font-weight: 800;
   font-family: var(--titleFontFamily);
@@ -131,11 +110,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .time {
-  font-size: 5rem;
+  font-size: 6rem;
   font-weight: 700;
   color: var(--kelly-green);
   font-family: var(--titleFontFamily);
@@ -144,7 +123,7 @@ body {
 }
 
 .date {
-  font-size: 2.2rem;
+  font-size: 2.8rem;
   font-weight: 500;
   color: var(--gray-800);
   font-family: var(--bodyFontFamily);
@@ -371,7 +350,7 @@ body {
 }
 
 .parts-bin {
-  font-size: 2rem;
+  font-size: 2.8rem;
   font-weight: 800;
   color: var(--white);
   text-align: center;
