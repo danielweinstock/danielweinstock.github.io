@@ -693,9 +693,12 @@
     return displayHours + ':' + minutes.toString().padStart(2, '0') + ' ' + period;
   }
 
-  function getFirstName(fullName) {
-    if (!fullName) return 'Guest';
-    return fullName.split(' ')[0];
+  function getFirstName(data) {
+    // Use the new payload structure
+    if (data && data.user_fname) return data.user_fname;
+    if (data && data.fname) return data.fname;
+    if (data && data.user) return data.user.split(' ')[0];
+    return 'Guest';
   }
 
   function IdleMessage() {
@@ -728,7 +731,7 @@
           e('div', { className: 'logo-placeholder' }, 'FREEFLOW\nLOGO'),
           e('div', { className: 'company-name' }, 'Freeflow Beverage Solutions')
         ),
-        e('div', { className: 'welcome-text' }, 'Welcome ' + getFirstName(userName))
+        e('div', { className: 'welcome-text' }, 'Welcome ' + userFirstName)
       ),
       e('div', { className: 'content-body' }, contentElements)
     );
@@ -809,10 +812,19 @@
           return;
         }
 
-        const name = data.name || data.user || "Guest";
+        // Extract user info from new payload structure
+        const firstName = data.user_fname || data.fname || '';
+        const lastName = data.user_lname || data.lname || '';
+        const fullName = data.user || (firstName + ' ' + lastName).trim() || "Guest";
         const eventType = data.event || "entry";
         const timeout = data.timeout || 30000;
-        const eventData = Object.assign({}, data, { name: name, eventType: eventType, timeout: timeout });
+        const eventData = Object.assign({}, data, { 
+          user_fname: firstName,
+          user_lname: lastName,
+          user: fullName,
+          eventType: eventType, 
+          timeout: timeout 
+        });
 
         renderWelcome(eventData);
 
@@ -821,7 +833,8 @@
             const resp = await fetch('https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=' + encodeURIComponent(data.sf_id));
             if (resp.ok) {
               const dashboard = await resp.json();
-              dashboard.userName = name;
+              // Pass the user payload to dashboard
+              dashboard.userPayload = eventData;
               setTimeout(function() {
                 renderDashboard(dashboard, 35000);
               }, 1500);
@@ -844,18 +857,22 @@
       // Demo mode - simulate a door event after 5 seconds for testing
       setTimeout(function() {
         const demoData = {
-          name: "Daniel Weinstock",
-          user: "Daniel Weinstock", 
+          user: "Daniel Weinstock",
+          user_fname: "Daniel",
+          user_lname: "Weinstock", 
           sf_id: "demo_id",
           event: "entry",
-          timeout: 30000
+          timeout: 30000,
+          door: "Freeflow Office",
+          emp_id: "demo-emp-id",
+          timestamp: Math.floor(Date.now() / 1000)
         };
         renderWelcome(demoData);
         
         // Simulate dashboard data
         setTimeout(function() {
           const demoDashboard = {
-            userName: "Daniel Weinstock",
+            userPayload: demoData,
             dispatch: {
               ASSIGNED: {
                 tech1: {
@@ -915,12 +932,15 @@
 
   function WelcomeMessage(props) {
     const data = props && props.data ? props.data : {};
-    const name = data.name || data.user || "Guest";
+    // Use the new payload structure with separate first/last names
+    const firstName = data.user_fname || data.fname || '';
+    const lastName = data.user_lname || data.lname || '';
+    const fullName = data.user || (firstName + ' ' + lastName).trim() || "Guest";
     
     return e('div', { className: 'content-container fade-in' },
       e('div', { className: 'welcome-large' },
         e('h2', { className: 'welcome-title' }, 'Welcome'),
-        e('h1', { className: 'welcome-name' }, name)
+        e('h1', { className: 'welcome-name' }, fullName)
       )
     );
   }
@@ -989,7 +1009,7 @@
 
     const parts = dashboard.parts_transfer || [];
     const messages = dashboard.messages || [];
-    const userName = dashboard.userName || 'Guest';
+    const userFirstName = getFirstName(dashboard.userPayload || dashboard);
 
     useEffect(function() {
       if (parts.length > 0) {
