@@ -79,22 +79,52 @@ body {
   text-align: center;
 }
 
-/* Idle Screen - Keep gradient for idle */
+/* Idle Screen - Enhanced with logo and gradient */
 .idle-container {
   justify-content: center;
   align-items: center;
   text-align: center;
-  background: linear-gradient(135deg, var(--kelly-green), var(--dark-green));
-  color: var(--white);
+  background: linear-gradient(135deg, var(--kelly-green) 0%, var(--white) 100%);
+  color: var(--gray-900);
+  padding: 4rem 2rem;
+}
+
+.idle-logo {
+  width: 120px;
+  height: 120px;
+  background: var(--white);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--kelly-green);
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 1.1;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2rem;
+  border: 3px solid var(--kelly-green);
+}
+
+.idle-company-name {
+  font-family: var(--titleFontFamily);
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 3rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .idle-greeting {
-  font-size: 4rem;
+  font-size: 6rem;
   margin-bottom: 3rem;
-  color: var(--white);
-  font-weight: 300;
+  color: var(--gray-900);
+  font-weight: 800;
   font-family: var(--titleFontFamily);
   letter-spacing: -0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .clock-container {
@@ -105,19 +135,19 @@ body {
 }
 
 .time {
-  font-size: 4.5rem;
-  font-weight: 300;
-  color: var(--white);
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--kelly-green);
   font-family: var(--titleFontFamily);
   letter-spacing: -0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .date {
-  font-size: 2rem;
-  font-weight: 400;
-  color: var(--white);
+  font-size: 2.2rem;
+  font-weight: 500;
+  color: var(--gray-800);
   font-family: var(--bodyFontFamily);
-  opacity: 0.9;
 }
 
 /* Welcome Screen - Keep gradient */
@@ -222,6 +252,7 @@ body {
   justify-content: center;
   padding: 1.5rem 1rem;
   position: relative;
+  gap: 0.8rem;
 }
 
 .job-time {
@@ -231,16 +262,17 @@ body {
   text-align: center;
   letter-spacing: -0.01em;
   line-height: 1;
-  margin-bottom: 0.5rem;
 }
 
 .job-number {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--white);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
-  opacity: 0.95;
   letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
 }
 
 .job-details {
@@ -325,26 +357,26 @@ body {
   justify-content: center;
   padding: 1.5rem 1rem;
   position: relative;
-}
-
-.parts-bin {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--white);
-  text-align: center;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  margin-bottom: 0.3rem;
+  gap: 0.5rem;
 }
 
 .parts-bin-label {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: var(--white);
   text-align: center;
-  opacity: 0.9;
   text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.95;
+}
+
+.parts-bin {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--white);
+  text-align: center;
   letter-spacing: 0.5px;
+  line-height: 1;
 }
 
 .parts-details {
