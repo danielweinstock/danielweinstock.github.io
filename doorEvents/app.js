@@ -189,7 +189,7 @@ function JobCard(props) {
         e('div', { className: 'job-number' }, job.jobNumber || 'N/A')
       ),
       e('div', { className: 'job-details' },
-        e('div', { className: 'job-customer' }, (job.customerName || job.customer_name || '—').toUpperCase()),
+        e('div', { className: 'job-customer' }, (job.location_name || job.customerName || job.customer_name || '—').toUpperCase()),
         e('div', { className: 'job-location' }, locationString),
         e('div', { className: 'job-meta' },
           e('div', { className: 'job-status' }, job.jobStatusName || job.code || 'Scheduled'),
