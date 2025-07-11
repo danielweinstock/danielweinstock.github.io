@@ -59,10 +59,10 @@ body {
   opacity: 0;
 }
 
-/* Header Section - Clean white header */
+/* Header Section - Simplified */
 .header-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 2rem 3rem;
   background: var(--white);
@@ -71,40 +71,12 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.logo-placeholder {
-  width: 80px;
-  height: 80px;
-  background: var(--kelly-green);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: var(--white);
-  font-size: 0.8rem;
-  text-align: center;
-  line-height: 1.2;
-  box-shadow: var(--shadow);
-}
-
-.company-name {
-  font-family: var(--titleFontFamily);
-  font-size: 2.4rem;
-  font-weight: 600;
-  color: var(--gray-900);
-}
-
 .welcome-text {
   font-family: var(--titleFontFamily);
-  font-size: 1.8rem;
-  font-weight: 500;
+  font-size: 2.5rem;
+  font-weight: 600;
   color: var(--kelly-green);
+  text-align: center;
 }
 
 /* Idle Screen - Keep gradient for idle */
@@ -244,7 +216,6 @@ body {
 
 .job-time-bar {
   width: 120px;
-  background: var(--kelly-green);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -254,17 +225,17 @@ body {
 }
 
 .job-time {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--white);
   text-align: center;
   letter-spacing: -0.01em;
   line-height: 1;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
 }
 
-.job-time-label {
-  font-size: 0.7rem;
+.job-number {
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--white);
   text-align: center;
@@ -305,7 +276,7 @@ body {
   gap: 0.8rem;
 }
 
-.job-number {
+.job-status {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--kelly-green);
@@ -341,19 +312,30 @@ body {
 .parts-card:nth-child(3) { animation-delay: 0.4s; }
 
 .parts-description {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   font-family: var(--titleFontFamily);
   line-height: 1.2;
 }
 
-.parts-job {
-  font-size: 1.3rem;
+.parts-bin {
+  font-size: 1.4rem;
   color: var(--warning-orange);
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  background: rgba(253, 126, 20, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.parts-job {
+  font-size: 1.1rem;
+  color: var(--gray-700);
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
 }
 
 .parts-notes {
