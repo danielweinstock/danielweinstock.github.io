@@ -275,7 +275,7 @@ function Dashboard(props) {
             e('div', { className: 'parts-bin' }, part.bin || 'N/A')
           ),
           e('div', { className: 'parts-details' },
-            e('div', { className: 'parts-description' }, part.description || 'Part description'),
+            e('div', { className: 'parts-description' }, (part.description || 'Part description').toUpperCase()),
             e('div', { className: 'parts-job' }, 'For Job: ' + (part.job_number || 'N/A')),
             part.notes ? e('div', { className: 'parts-notes' }, part.notes) : null
           )
