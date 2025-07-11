@@ -152,156 +152,278 @@
 </head>
 <body>
   <div id="root"></div>
-  <script>
-    // ---- Firebase config (edit these values for your project) ----
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "freeflow-internal-projects.firebaseapp.com",
-      databaseURL: "https://freeflow-internal-projects-default-rtdb.firebaseio.com",
-      projectId: "freeflow-internal-projects",
-      storageBucket: "freeflow-internal-projects.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+<script>
+  // Firebase config here...
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "freeflow-internal-projects.firebaseapp.com",
+    databaseURL: "https://freeflow-internal-projects-default-rtdb.firebaseio.com",
+    projectId: "freeflow-internal-projects",
+    storageBucket: "freeflow-internal-projects.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  let fadeTimeout = null;
+  let idleTimeout = null;
+  let clockInterval = null;
+  let currentScreenId = null;
+  let dashboardTimeout = null;
+
+  // ...getScreenIdentifier, setupScreenId, getTimeBasedGreeting, formatTime, formatDate as before...
+
+  const getScreenIdentifier = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('screenId')) return urlParams.get('screenId');
+    const storedScreenId = localStorage.getItem('screencloudScreenId');
+    if (storedScreenId) return storedScreenId;
+    return null;
+  };
+
+  const setupScreenId = () => {
+    const setupDiv = document.createElement('div');
+    setupDiv.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.9); color: white; display: flex;
+      flex-direction: column; justify-content: center; align-items: center;
+      font-family: sans-serif; z-index: 9999;`;
+    setupDiv.innerHTML = `
+      <h1>Screen Setup Required</h1>
+      <p>Please select this screen's location:</p>
+      <button onclick="setScreenId('front_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Front Door</button>
+      <button onclick="setScreenId('back_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Back Door</button>
+      <button onclick="setScreenId('side_entrance')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Side Entrance</button>
+      <button onclick="setScreenId('main_lobby')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Main Lobby</button>
+    `;
+    document.body.appendChild(setupDiv);
+    window.setScreenId = (screenId) => {
+      localStorage.setItem('screencloudScreenId', screenId);
+      currentScreenId = screenId;
+      document.body.removeChild(setupDiv);
+      console.log('Screen ID set to:', screenId);
+      initializeApp();
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  };
 
-    // ---- App state ----
-    let fadeTimeout = null;
-    let idleTimeout = null;
-    let clockInterval = null;
-    let currentScreenId = null;
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Good Morning";
+    if (hour >= 12 && hour < 17) return "Good Afternoon";
+    if (hour >= 17 && hour < 21) return "Good Evening";
+    return "Good Night";
+  };
+  const formatTime = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+  const formatDate = () => new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-    // ---- Get screen identifier ----
-    const getScreenIdentifier = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('screenId')) return urlParams.get('screenId');
-      const storedScreenId = localStorage.getItem('screencloudScreenId');
-      if (storedScreenId) return storedScreenId;
-      return null;
-    };
-
-    // ---- Screen ID setup UI ----
-    const setupScreenId = () => {
-      const setupDiv = document.createElement('div');
-      setupDiv.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.9); color: white; display: flex;
-        flex-direction: column; justify-content: center; align-items: center;
-        font-family: sans-serif; z-index: 9999;`;
-      setupDiv.innerHTML = `
-        <h1>Screen Setup Required</h1>
-        <p>Please select this screen's location:</p>
-        <button onclick="setScreenId('front_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Front Door</button>
-        <button onclick="setScreenId('back_door')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Back Door</button>
-        <button onclick="setScreenId('side_entrance')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Side Entrance</button>
-        <button onclick="setScreenId('main_lobby')" style="margin: 10px; padding: 15px 30px; font-size: 18px;">Main Lobby</button>
-      `;
-      document.body.appendChild(setupDiv);
-      window.setScreenId = (screenId) => {
-        localStorage.setItem('screencloudScreenId', screenId);
-        currentScreenId = screenId;
-        document.body.removeChild(setupDiv);
-        console.log('Screen ID set to:', screenId);
-        initializeApp();
-      };
-    };
-
-    // ---- Greeting/time/date formatting ----
-    const getTimeBasedGreeting = () => {
-      const hour = new Date().getHours();
-      if (hour >= 5 && hour < 12) return "Good Morning";
-      if (hour >= 12 && hour < 17) return "Good Afternoon";
-      if (hour >= 17 && hour < 21) return "Good Evening";
-      return "Good Night";
-    };
-    const formatTime = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-    const formatDate = () => new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-    // ---- Idle message ----
-    const showIdleMessage = () => {
-      const updateClock = () => {
-        ReactDOM.render(
-          React.createElement('div', { id: "inner-root", className: "idle-container fade-in" },
-            React.createElement('h1', { className: "idle-greeting" }, getTimeBasedGreeting()),
-            React.createElement('div', { className: "clock-container" },
-              React.createElement('div', { className: "time" }, formatTime()),
-              React.createElement('div', { className: "date" }, formatDate())
-            )
-          ),
-          document.getElementById("root")
-        );
-      };
-      updateClock();
-      clockInterval = setInterval(updateClock, 1000);
-    };
-
-    // ---- Is this message for this screen? ----
-    const isMessageForThisScreen = (data) => {
-      if (!data.targetScreen) return true;
-      if (data.targetScreen === currentScreenId) return true;
-      if (data.targetScreenName && currentScreenId) return false;
-      return false;
-    };
-
-    // ---- Main render ----
-    const render = (data) => {
-      if (!isMessageForThisScreen(data)) {
-        console.log(`Message not for this screen. Target: ${data.targetScreen}, Current: ${currentScreenId}`);
-        return;
-      }
-      console.log(`Displaying message for ${data.targetScreen || 'all screens'}: ${data.name || data.user || data.number}`);
+  // --- Idle message ---
+  const showIdleMessage = () => {
+    if (dashboardTimeout) clearTimeout(dashboardTimeout);
+    const updateClock = () => {
       ReactDOM.render(
-        React.createElement('div', { id: "inner-root", className: "content-container fade-in" },
-          React.createElement('h2', { className: "template-text intro-text" }, "Welcome"),
-          React.createElement('h1', { className: "template-text data-number" },
-            data ? (data.name || data.user || data.number || "Guest") : "Guest"
-          ),
-          (data.doorName || data.door) && React.createElement('h3', { className: "template-text door-info" }, data.doorName || data.door)
+        React.createElement('div', { id: "inner-root", className: "idle-container fade-in" },
+          React.createElement('h1', { className: "idle-greeting" }, getTimeBasedGreeting()),
+          React.createElement('div', { className: "clock-container" },
+            React.createElement('div', { className: "time" }, formatTime()),
+            React.createElement('div', { className: "date" }, formatDate())
+          )
         ),
         document.getElementById("root")
       );
-      if (fadeTimeout) clearTimeout(fadeTimeout);
-      if (idleTimeout) clearTimeout(idleTimeout);
-      if (clockInterval) clearInterval(clockInterval);
-      const timeoutDuration = data.timeout || 30000;
-      fadeTimeout = setTimeout(() => {
-        const contentContainer = document.querySelector('.content-container');
-        if (contentContainer) {
-          contentContainer.classList.remove('fade-in');
-          contentContainer.classList.add('fade-out');
-          idleTimeout = setTimeout(showIdleMessage, 2000);
+    };
+    updateClock();
+    clockInterval = setInterval(updateClock, 1000);
+  };
+
+  // --- Message for this screen? ---
+  const isMessageForThisScreen = (data) => {
+    if (!data.targetScreen) return true;
+    if (data.targetScreen === currentScreenId) return true;
+    if (data.targetScreenName && currentScreenId) return false;
+    return false;
+  };
+
+  // --- Welcome render (shows immediately on scan) ---
+  const renderWelcome = (data) => {
+    ReactDOM.render(
+      React.createElement('div', { id: "inner-root", className: "content-container fade-in" },
+        React.createElement('h2', { className: "template-text intro-text" }, "Welcome"),
+        React.createElement('h1', { className: "template-text data-number" },
+          data ? (data.name || data.user || data.number || "Guest") : "Guest"
+        ),
+        (data.doorName || data.door) && React.createElement('h3', { className: "template-text door-info" }, data.doorName || data.door)
+      ),
+      document.getElementById("root")
+    );
+    if (fadeTimeout) clearTimeout(fadeTimeout);
+    if (idleTimeout) clearTimeout(idleTimeout);
+    if (clockInterval) clearInterval(clockInterval);
+  };
+
+  // --- Technician dashboard render ---
+  const renderDashboard = (dashboard, timeout = 35000) => {
+    // --- parse and order jobs by start time ---
+    let jobs = [];
+    if (dashboard.dispatch && dashboard.dispatch.ASSIGNED) {
+      const allVisits = Object.values(dashboard.dispatch.ASSIGNED)
+        .flatMap(obj => Object.values(obj));
+      jobs = allVisits.filter(j => j.jobNumber && j.jobStartDate)
+        .map(j => ({
+          ...j,
+          // try to build a sort-able date/time value from startMin or jobStartDate + startMin
+          startSort: (() => {
+            // format: "2025-07-10", startMin: 500 (minutes from midnight)
+            let date = j.jobStartDate;
+            let mins = parseInt(j.startMin || 0, 10);
+            if (!date || isNaN(mins)) return Number.MAX_SAFE_INTEGER;
+            let [year, month, day] = date.split('-').map(x => parseInt(x, 10));
+            return new Date(year, month - 1, day, Math.floor(mins / 60), mins % 60).getTime();
+          })()
+        }))
+        .sort((a, b) => a.startSort - b.startSort);
+    }
+
+    // --- parts transfers ---
+    const parts = dashboard.parts_transfer || [];
+
+    // --- messages ---
+    const messages = dashboard.messages || [];
+
+    // --- animate in the dashboard ---
+    ReactDOM.render(
+      React.createElement('div', { className: "content-container fade-in", style: { animation: "fadein-slidein 0.8s" } },
+        React.createElement('h2', { className: "template-text intro-text" }, "Today's Schedule"),
+        jobs.length ? (
+          React.createElement('div', { style: { width: "96vw", maxWidth: 900, margin: "0 auto", marginTop: "2rem", marginBottom: "2rem" } },
+            jobs.map(j =>
+              React.createElement('div', {
+                key: j.jobNumber + j.jobStartDate,
+                style: {
+                  background: "#fff2",
+                  borderRadius: 12,
+                  padding: "1.5rem 2rem",
+                  marginBottom: 14,
+                  boxShadow: "0 2px 16px #0001",
+                  borderLeft: "10px solid " + (j.background || "#ccc")
+                }
+              },
+                React.createElement('div', { style: { fontWeight: 700, fontSize: "1.5rem", color: "#fff" } }, j.customerName || j.customer_name || "—"),
+                React.createElement('div', { style: { fontSize: "1.1rem", color: "#fff", marginBottom: 6 } },
+                  [j.city_state, j.postal_code].filter(Boolean).join(" · ")
+                ),
+                React.createElement('div', { style: { fontSize: "1rem", color: "#fff" } },
+                  j.job_category || "No category"
+                ),
+                React.createElement('div', { style: { fontSize: "1.4rem", fontWeight: 500, margin: "6px 0", color: "#ffeb3b" } },
+                  `Job #${j.jobNumber}`
+                ),
+                React.createElement('div', { style: { fontSize: "1.1rem", color: "#eee" } },
+                  "Start: " + (j.title_head_weekly || (j.jobStartDate ? `${j.jobStartDate}` : ''))
+                ),
+                React.createElement('div', { style: { fontSize: "1.1rem", color: "#eee" } },
+                  "Status: " + (j.jobStatusName || j.code || "—")
+                )
+              )
+            )
+          )
+        ) : React.createElement('div', { style: { color: "#fff", margin: "2rem" } }, "No jobs scheduled."),
+        parts.length ? (
+          React.createElement('div', { style: { margin: "2rem auto 0 auto", width: "90vw", maxWidth: 700 } },
+            React.createElement('h2', { style: { color: "#ff8a00", fontSize: "2rem" } }, "Parts to Transfer"),
+            parts.map(p =>
+              React.createElement('div', {
+                key: p.transfer_id,
+                style: { background: "#222b", borderRadius: 10, padding: "1.1rem 1.5rem", color: "#fff", marginBottom: 10 }
+              },
+                React.createElement('div', { style: { fontWeight: 600 } }, p.description),
+                React.createElement('div', null, "For Job: " + (p.job_number || "")),
+                p.notes && React.createElement('div', { style: { color: "#ffd700", marginTop: 2 } }, p.notes)
+              )
+            )
+          )
+        ) : null,
+        messages.length ? (
+          React.createElement('div', { style: { margin: "2rem auto 0 auto", width: "90vw", maxWidth: 700 } },
+            React.createElement('h2', { style: { color: "#62e5a1", fontSize: "2rem" } }, "Messages"),
+            messages.map(m =>
+              React.createElement('div', {
+                key: m.messageId,
+                style: { background: "#205940", borderRadius: 10, padding: "1.2rem 1.5rem", color: "#fff", marginBottom: 12, fontWeight: 500, fontSize: "1.3rem", display: "flex", alignItems: "center", gap: 20 }
+              },
+                m.message_icon && React.createElement('img', { src: m.message_icon, style: { width: 48, height: 48, marginRight: 16, borderRadius: "50%" } }),
+                React.createElement('span', null, m.message_text)
+              )
+            )
+          )
+        ) : null
+      ),
+      document.getElementById("root")
+    );
+
+    // Clean up previous timeouts
+    if (fadeTimeout) clearTimeout(fadeTimeout);
+    if (idleTimeout) clearTimeout(idleTimeout);
+    if (clockInterval) clearInterval(clockInterval);
+
+    // Fade back to idle after timeout
+    dashboardTimeout = setTimeout(showIdleMessage, timeout);
+  };
+
+  // ---- Main App Init ----
+  const initializeApp = () => {
+    showIdleMessage();
+
+    db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
+      const data = snapshot.val();
+      console.log('Inbound RTDB event data:', data);
+      const name = data.name || data.user || "Guest";
+      const doorName = data.doorName || data.door || "Unknown Door";
+      const eventType = data.event || "entry";
+      const timeout = data.timeout || 30000;
+      const eventData = { ...data, name, doorName, eventType, timeout };
+
+      // 1. Show welcome message immediately
+      renderWelcome(eventData);
+
+      // 2. If sf_id present, call webhook and display dashboard
+      if (data.sf_id) {
+        try {
+          const resp = await fetch(`https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=${encodeURIComponent(data.sf_id)}`);
+          if (resp.ok) {
+            const dashboard = await resp.json();
+            setTimeout(() => renderDashboard(dashboard, 35000), 1300); // slight delay for smooth transition
+          }
+        } catch (e) {
+          console.error("Error fetching dashboard from Make.com:", e);
         }
-      }, timeoutDuration);
-    };
-
-    // ---- Initialize app: Listen to Firebase RTDB ----
-    const initializeApp = () => {
-      showIdleMessage();
-      db.ref('doorEvents').limitToLast(1).on('child_added', function(snapshot) {
-        const data = snapshot.val();
-        console.log('Inbound RTDB event data:', data);
-        const name = data.name || data.user || "Guest";
-        const doorName = data.doorName || data.door || "Unknown Door";
-        const eventType = data.event || "entry";
-        const timeout = data.timeout || 10000;
-        const eventData = { ...data, name, doorName, eventType, timeout };
-        render(eventData);
-      });
-      console.log('App initialized, waiting for Firebase data pushes...');
-    };
-
-    // ---- App entry point ----
-    window.onload = () => {
-      currentScreenId = getScreenIdentifier();
-      if (currentScreenId) {
-        console.log('Screen ID determined:', currentScreenId);
-        initializeApp();
-      } else {
-        console.log('Screen ID not found, showing setup');
-        setupScreenId();
       }
-    };
-  </script>
+    });
+    console.log('App initialized, waiting for Firebase data pushes...');
+  };
+
+  window.onload = () => {
+    currentScreenId = getScreenIdentifier();
+    if (currentScreenId) {
+      console.log('Screen ID determined:', currentScreenId);
+      initializeApp();
+    } else {
+      console.log('Screen ID not found, showing setup');
+      setupScreenId();
+    }
+  };
+
+  // --- Animation style ---
+  const style = document.createElement('style');
+  style.innerHTML = `
+  @keyframes fadein-slidein {
+    0% { opacity: 0; transform: translateY(40px) scale(.98);}
+    100% { opacity: 1; transform: translateY(0) scale(1);}
+  }
+  .fade-in { animation: fadein-slidein 1s; }
+  `;
+  document.head.appendChild(style);
+
+</script>
 </body>
 </html>
