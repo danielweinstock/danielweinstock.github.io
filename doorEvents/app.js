@@ -125,7 +125,7 @@ function IdleMessage() {
   return e('div', { className: 'idle-container fade-in' },
     e('img', { 
       className: 'idle-logo',
-      src: 'freeflow-logo-white-trans.png',
+      src: 'freeflow-logo-white-transparent.png',
       alt: 'Freeflow Logo'
     }),
     e('h1', { className: 'idle-greeting' }, getTimeBasedGreeting()),
