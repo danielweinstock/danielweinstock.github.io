@@ -236,17 +236,24 @@ function checkAndScrollContent() {
     const scrollDistance = contentHeight - viewportHeight;
     const scrollDuration = Math.max(15000, scrollDistance * 20); // 20ms per pixel
     
+    // Calculate when scroll will complete (3 second delay + scroll duration)
+    const scrollCompletionTime = 3000 + scrollDuration;
+    
+    // Use standard 30 second timeout, but if scroll takes longer, add 5 second buffer
+    const standardTimeout = 30000;
+    const timeoutDuration = scrollCompletionTime > standardTimeout ? 
+      scrollCompletionTime + 5000 : standardTimeout;
+    
     // Smooth scroll to bottom with much slower speed
     contentBody.scrollTo({
       top: scrollDistance,
       behavior: 'smooth'
     });
     
-    // Set new timeout: scroll duration + 5 seconds buffer
-    const totalTimeout = scrollDuration + 5000;
-    dashboardTimeout = setTimeout(showIdleMessage, totalTimeout);
+    // Set timeout based on calculation above
+    dashboardTimeout = setTimeout(showIdleMessage, timeoutDuration);
     
-    console.log(`Auto-scroll will take ${scrollDuration}ms, total timeout: ${totalTimeout}ms`);
+    console.log(`Auto-scroll will take ${scrollDuration}ms, timeout set to: ${timeoutDuration}ms`);
   }
 }
 
