@@ -268,8 +268,8 @@ function checkAndScrollContent() {
     }
     
     const scrollDistance = contentHeight - viewportHeight;
-    // Good readable scroll speed: 10+ seconds depending on content
-    const scrollDuration = Math.max(10000, scrollDistance * 13); // 13ms per pixel for good speed
+    // Good readable scroll speed: 3+ seconds depending on content
+    const scrollDuration = Math.max(3000, scrollDistance * 13); // 13ms per pixel with 3 second minimum
     
     console.log(`Scrolling ${scrollDistance}px over ${scrollDuration}ms`);
     
