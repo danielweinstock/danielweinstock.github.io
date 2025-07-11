@@ -40,12 +40,146 @@ function getScreenIdentifier() {
   if (urlParams.get('reset') === 'true') {
     localStorage.removeItem('screencloudScreenId');
     console.log('Screen ID reset via URL parameter');
-    return null;
+    return Promise.resolve(null);
   }
   
-  if (urlParams.get('screenId')) return urlParams.get('screenId');
+  // 1. First priority: Check ScreenCloud SDK
+  if (typeof window.ScreenCloud !== 'undefined') {
+    console.log('ScreenCloud SDK detected, fetching configuration...');
+    
+    return new Promise((resolve) => {
+      let resolved = false;
+      
+      const resolveOnce = (value) => {
+        if (!resolved) {
+          resolved = true;
+          resolve(value);
+        }
+      };
+      
+      // Set a timeout to prevent hanging
+      setTimeout(() => {
+        if (!resolved) {
+          console.log('ScreenCloud SDK timeout, falling back');
+          resolveOnce(fallbackScreenIdCheckSync());
+        }
+      }, 2000);
+      
+      try {
+        // Method 1: Try getting custom data directly
+        if (window.ScreenCloud.getCustomData && typeof window.ScreenCloud.getCustomData === 'function') {
+          window.ScreenCloud.getCustomData((data) => {
+            if (data && data.sc_screen_door) {
+              console.log('Screen door from ScreenCloud SDK getCustomData:', data.sc_screen_door);
+              const validatedId = validateAndSetScreenId(data.sc_screen_door);
+              if (validatedId) {
+                resolveOnce(validatedId);
+                return;
+              }
+            }
+            resolveOnce(fallbackScreenIdCheckSync());
+          });
+          return;
+        }
+        
+        // Method 2: Try getting screen info
+        if (window.ScreenCloud.getScreenInfo && typeof window.ScreenCloud.getScreenInfo === 'function') {
+          window.ScreenCloud.getScreenInfo((screenInfo) => {
+            if (screenInfo && screenInfo.customData && screenInfo.customData.sc_screen_door) {
+              console.log('Screen door from ScreenCloud SDK getScreenInfo:', screenInfo.customData.sc_screen_door);
+              const validatedId = validateAndSetScreenId(screenInfo.customData.sc_screen_door);
+              if (validatedId) {
+                resolveOnce(validatedId);
+                return;
+              }
+            }
+            resolveOnce(fallbackScreenIdCheckSync());
+          });
+          return;
+        }
+        
+        // Method 3: Try direct property access
+        if (window.ScreenCloud.customData && window.ScreenCloud.customData.sc_screen_door) {
+          console.log('Screen door from ScreenCloud SDK direct access:', window.ScreenCloud.customData.sc_screen_door);
+          const validatedId = validateAndSetScreenId(window.ScreenCloud.customData.sc_screen_door);
+          if (validatedId) {
+            resolveOnce(validatedId);
+            return;
+          }
+        }
+        
+        // Method 4: Try config/settings
+        if (window.ScreenCloud.getConfig && typeof window.ScreenCloud.getConfig === 'function') {
+          window.ScreenCloud.getConfig((config) => {
+            if (config && config.sc_screen_door) {
+              console.log('Screen door from ScreenCloud SDK getConfig:', config.sc_screen_door);
+              const validatedId = validateAndSetScreenId(config.sc_screen_door);
+              if (validatedId) {
+                resolveOnce(validatedId);
+                return;
+              }
+            }
+            resolveOnce(fallbackScreenIdCheckSync());
+          });
+          return;
+        }
+        
+        console.log('ScreenCloud SDK available but no suitable methods found');
+        resolveOnce(fallbackScreenIdCheckSync());
+        
+      } catch (error) {
+        console.error('Error accessing ScreenCloud SDK:', error);
+        resolveOnce(fallbackScreenIdCheckSync());
+      }
+    });
+  } else {
+    console.log('ScreenCloud SDK not available, checking other sources');
+    return Promise.resolve(fallbackScreenIdCheckSync());
+  }
+}
+
+function validateAndSetScreenId(screenCloudDoor) {
+  const validDoors = ['warehouse_door', 'main_entrance', 'freeflow_office', 'all_doors'];
+  if (validDoors.includes(screenCloudDoor)) {
+    console.log('Using ScreenCloud door assignment:', screenCloudDoor);
+    // Update localStorage to keep it in sync
+    localStorage.setItem('screencloudScreenId', screenCloudDoor);
+    return screenCloudDoor;
+  } else {
+    console.warn('Invalid ScreenCloud door assignment:', screenCloudDoor, 'Expected one of:', validDoors);
+    return null;
+  }
+}
+
+function fallbackScreenIdCheckSync() {
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  // 2. Second priority: Check URL parameters for legacy support
+  if (urlParams.get('sc_screen_door')) {
+    const screenCloudDoor = urlParams.get('sc_screen_door');
+    console.log('Screen door from URL parameter:', screenCloudDoor);
+    const validatedId = validateAndSetScreenId(screenCloudDoor);
+    if (validatedId) {
+      return validatedId;
+    }
+  }
+  
+  // 3. Third priority: Check manual URL override
+  if (urlParams.get('screenId')) {
+    const manualId = urlParams.get('screenId');
+    console.log('Using manual URL screenId:', manualId);
+    return manualId;
+  }
+  
+  // 4. Fourth priority: Check localStorage (existing manual setup)
   const storedScreenId = localStorage.getItem('screencloudScreenId');
-  if (storedScreenId) return storedScreenId;
+  if (storedScreenId) {
+    console.log('Using stored screenId:', storedScreenId);
+    return storedScreenId;
+  }
+  
+  // 5. No configuration found
+  console.log('No screen configuration found');
   return null;
 }
 
@@ -55,6 +189,80 @@ function decodeHtmlEntities(text) {
   textarea.innerHTML = text;
   return textarea.value;
 }
+
+function debugScreenCloudData() {
+  console.log('=== ScreenCloud Data Debug ===');
+  
+  // Check ScreenCloud SDK
+  if (typeof window.ScreenCloud !== 'undefined') {
+    console.log('✅ ScreenCloud SDK detected');
+    console.log('ScreenCloud object:', window.ScreenCloud);
+    
+    // Check available methods
+    const methods = ['getCustomData', 'getScreenInfo', 'getConfig', 'customData'];
+    methods.forEach(method => {
+      if (window.ScreenCloud[method]) {
+        console.log(`✅ ScreenCloud.${method} available`);
+        
+        // Try to call methods that don't require callbacks
+        if (method === 'customData' && typeof window.ScreenCloud[method] === 'object') {
+          console.log(`ScreenCloud.${method}:`, window.ScreenCloud[method]);
+        }
+      } else {
+        console.log(`❌ ScreenCloud.${method} not available`);
+      }
+    });
+    
+    // Try async methods
+    if (window.ScreenCloud.getCustomData) {
+      window.ScreenCloud.getCustomData((data) => {
+        console.log('ScreenCloud.getCustomData result:', data);
+      });
+    }
+    
+    if (window.ScreenCloud.getScreenInfo) {
+      window.ScreenCloud.getScreenInfo((info) => {
+        console.log('ScreenCloud.getScreenInfo result:', info);
+      });
+    }
+    
+    if (window.ScreenCloud.getConfig) {
+      window.ScreenCloud.getConfig((config) => {
+        console.log('ScreenCloud.getConfig result:', config);
+      });
+    }
+  } else {
+    console.log('❌ ScreenCloud SDK not found');
+  }
+  
+  // Check URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  console.log('URL sc_screen_door:', urlParams.get('sc_screen_door'));
+  
+  // Check legacy global objects
+  if (typeof window.screencloud !== 'undefined') {
+    console.log('Legacy screencloud object:', window.screencloud);
+  } else {
+    console.log('No legacy screencloud object found');
+  }
+  
+  // Check meta tags
+  const metaTag = document.querySelector('meta[name="sc_screen_door"]');
+  console.log('Meta tag sc_screen_door:', metaTag ? metaTag.getAttribute('content') : 'Not found');
+  
+  // Check localStorage
+  const scData = localStorage.getItem('screencloud_custom_data');
+  console.log('ScreenCloud localStorage data:', scData);
+  
+  const storedId = localStorage.getItem('screencloudScreenId');
+  console.log('Stored screen ID:', storedId);
+  
+  console.log('Current screen ID:', currentScreenId);
+  console.log('===============================');
+}
+
+// Make debug function available globally for testing
+window.debugScreenCloudData = debugScreenCloudData;
 
 function playPartsAlert() {
   try {
@@ -455,25 +663,47 @@ function SetupScreen() {
     initializeApp();
   }
 
+  // Check if we have any ScreenCloud data available
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasScreenCloudSDK = typeof window.ScreenCloud !== 'undefined';
+  const hasScreenCloudData = urlParams.get('sc_screen_door') || hasScreenCloudSDK;
+
   return e('div', { className: 'setup-screen' },
     e('h1', null, 'Screen Setup Required'),
-    e('p', null, 'Please select this screen\'s location:'),
-    e('button', { 
-      className: 'setup-button',
-      onClick: function() { handleSetScreenId('warehouse_door'); }
-    }, 'Warehouse Door'),
-    e('button', { 
-      className: 'setup-button',
-      onClick: function() { handleSetScreenId('main_entrance'); }
-    }, 'Main Entrance'),
-    e('button', { 
-      className: 'setup-button',
-      onClick: function() { handleSetScreenId('freeflow_office'); }
-    }, 'Freeflow Office'),
-    e('button', { 
-      className: 'setup-button',
-      onClick: function() { handleSetScreenId('all_doors'); }
-    }, 'All Doors')
+    hasScreenCloudData ? 
+      e('p', { className: 'setup-info' }, hasScreenCloudSDK ? 'ScreenCloud SDK detected but no valid door assignment found. Please select manually:' : 'ScreenCloud configuration detected but invalid. Please select manually:') :
+      e('p', null, 'Please select this screen\'s location:'),
+    e('div', { className: 'setup-buttons' },
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('warehouse_door'); }
+      }, 'Warehouse Door'),
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('main_entrance'); }
+      }, 'Main Entrance'),
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('freeflow_office'); }
+      }, 'Freeflow Office'),
+      e('button', { 
+        className: 'setup-button',
+        onClick: function() { handleSetScreenId('all_doors'); }
+      }, 'All Doors')
+    ),
+    e('div', { className: 'setup-help' },
+      e('p', null, 'Configuration Priority:'),
+      e('ol', null,
+        e('li', null, 'ScreenCloud SDK (sc_screen_door field)'),
+        e('li', null, 'URL parameter (?sc_screen_door=...)'),
+        e('li', null, 'URL parameter (?screenId=...)'),
+        e('li', null, 'Manual selection (this screen)')
+      ),
+      e('button', {
+        className: 'debug-button',
+        onClick: function() { debugScreenCloudData(); }
+      }, 'Debug ScreenCloud Data (Check Console)')
+    )
   );
 }
 
@@ -674,12 +904,18 @@ window.onload = function() {
     }
   });
 
-  currentScreenId = getScreenIdentifier();
-  if (currentScreenId) {
-    console.log('Screen ID determined:', currentScreenId);
-    initializeApp();
-  } else {
-    console.log('Screen ID not found, showing setup');
+  // Handle async screen identification
+  getScreenIdentifier().then((screenId) => {
+    currentScreenId = screenId;
+    if (currentScreenId) {
+      console.log('Screen ID determined:', currentScreenId);
+      initializeApp();
+    } else {
+      console.log('Screen ID not found, showing setup');
+      setupScreenId();
+    }
+  }).catch((error) => {
+    console.error('Error getting screen ID:', error);
     setupScreenId();
-  }
+  });
 };
