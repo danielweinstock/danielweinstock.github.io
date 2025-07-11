@@ -273,7 +273,7 @@ function Dashboard(props) {
   if (parts.length > 0) {
     contentElements.push(
       e('div', { className: 'section', key: 'parts-section' },
-        e('div', { className: 'parts-alert' }, '🚨 PARTS TRANSFER REQUIRED 🚨'),
+        e('div', { className: 'parts-alert' }, 'PARTS TRANSFER REQUIRED'),
         e('h2', { className: 'section-title' },
           e('div', { className: 'section-icon' }, '📦'),
           'Parts to Transfer'
