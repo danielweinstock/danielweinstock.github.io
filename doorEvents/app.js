@@ -216,6 +216,39 @@ function animateJobCards() {
   });
 }
 
+function checkAndScrollContent() {
+  const contentBody = document.querySelector('.content-body');
+  if (!contentBody) return;
+  
+  const contentHeight = contentBody.scrollHeight;
+  const viewportHeight = contentBody.clientHeight;
+  
+  if (contentHeight > viewportHeight) {
+    console.log('Content overflows, starting auto-scroll');
+    
+    // Clear any existing dashboard timeout
+    if (dashboardTimeout) {
+      clearTimeout(dashboardTimeout);
+      dashboardTimeout = null;
+    }
+    
+    // Calculate scroll duration based on content height (minimum 8 seconds)
+    const scrollDuration = Math.max(8000, (contentHeight / viewportHeight) * 4000);
+    
+    // Smooth scroll to bottom
+    contentBody.scrollTo({
+      top: contentHeight - viewportHeight,
+      behavior: 'smooth'
+    });
+    
+    // Set new timeout: scroll duration + 5 seconds buffer
+    const totalTimeout = scrollDuration + 5000;
+    dashboardTimeout = setTimeout(showIdleMessage, totalTimeout);
+    
+    console.log(`Auto-scroll will take ${scrollDuration}ms, total timeout: ${totalTimeout}ms`);
+  }
+}
+
 function Dashboard(props) {
   const dashboard = props && props.dashboard ? props.dashboard : {};
   
@@ -259,6 +292,8 @@ function Dashboard(props) {
     
     setTimeout(function() {
       animateJobCards();
+      // Check for overflow and start auto-scroll after animations complete
+      setTimeout(checkAndScrollContent, 2000);
     }, 100);
   }, [parts.length]);
 
