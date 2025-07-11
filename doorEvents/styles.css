@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --kelly-green: #00a651;
@@ -14,7 +14,7 @@
   --gray-800: #343a40;
   --gray-900: #212529;
   --bodyFontFamily: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --titleFontFamily: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --titleFontFamily: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --alert-red: #dc3545;
   --warning-orange: #fd7e14;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
@@ -213,58 +213,58 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* Job Cards - COMPLETELY REDESIGNED */
+/* Job Cards - TIGHTER, MORE COMPACT DESIGN */
 .job-card {
   background: var(--white);
-  border-radius: 20px;
-  margin-bottom: 2rem;
+  border-radius: 16px;
+  margin-bottom: 1.2rem;
   overflow: hidden;
   border: 1px solid var(--gray-200);
   transition: all 0.3s ease;
   opacity: 0;
-  transform: translateX(-60px);
+  transform: translateX(100px);
   box-shadow: var(--shadow);
 }
 
 .job-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
   border-color: var(--kelly-green);
 }
 
 .job-card.animate-in {
-  animation: slideInJob 0.6s ease-out forwards;
+  animation: slideInFromRight 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .job-card-content {
   display: flex;
   height: 100%;
-  min-height: 160px;
+  min-height: 100px;
 }
 
 .job-time-bar {
-  width: 150px;
+  width: 120px;
   background: var(--kelly-green);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
   position: relative;
 }
 
 .job-time {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: var(--white);
   text-align: center;
   letter-spacing: -0.01em;
   line-height: 1;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .job-time-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--white);
   text-align: center;
@@ -275,25 +275,25 @@ body {
 
 .job-details {
   flex: 1;
-  padding: 2.5rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .job-customer {
-  font-size: 2rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.4rem;
   font-family: var(--titleFontFamily);
   line-height: 1.2;
 }
 
 .job-location {
-  font-size: 1.3rem;
+  font-size: 1rem;
   color: var(--gray-700);
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.8rem;
   font-weight: 500;
 }
 
@@ -302,26 +302,26 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .job-number {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--kelly-green);
   background: var(--light-green);
-  padding: 0.6rem 1.2rem;
-  border-radius: 25px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
   border: 1px solid var(--kelly-green);
 }
 
 .job-category {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   color: var(--gray-700);
   font-weight: 500;
   background: var(--gray-100);
-  padding: 0.6rem 1.2rem;
-  border-radius: 25px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
 }
 
 /* Parts Transfer Cards - Clean design */
@@ -404,22 +404,11 @@ body {
   line-height: 1.4;
 }
 
-/* Animations */
-@keyframes slideInJob {
-  from {
-    opacity: 0;
-    transform: translateX(-60px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
+/* Animations - RIGHT TO LEFT WITH EASING */
 @keyframes slideInFromRight {
   from {
     opacity: 0;
-    transform: translateX(60px);
+    transform: translateX(100px);
   }
   to {
     opacity: 1;
@@ -451,7 +440,7 @@ body {
   animation: pulse 2s infinite;
 }
 
-/* Alert Styles - Clean design */
+/* Alert Styles - NO EMOJIS */
 .parts-alert {
   background: var(--alert-red);
   color: var(--white);
