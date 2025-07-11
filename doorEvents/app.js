@@ -123,6 +123,8 @@ function IdleMessage() {
   }, []);
 
   return e('div', { className: 'idle-container fade-in' },
+    e('div', { className: 'idle-logo' }, 'FREEFLOW\nLOGO'),
+    e('div', { className: 'idle-company-name' }, 'Beverage Solutions Co'),
     e('h1', { className: 'idle-greeting' }, getTimeBasedGreeting()),
     e('div', { className: 'clock-container' },
       e('div', { className: 'time' }, time),
@@ -249,8 +251,8 @@ function Dashboard(props) {
       },
         e('div', { className: 'parts-card-content' },
           e('div', { className: 'parts-bin-bar' },
-            e('div', { className: 'parts-bin' }, part.bin || 'N/A'),
-            e('div', { className: 'parts-bin-label' }, 'BIN')
+            e('div', { className: 'parts-bin-label' }, 'BIN'),
+            e('div', { className: 'parts-bin' }, part.bin || 'N/A')
           ),
           e('div', { className: 'parts-details' },
             e('div', { className: 'parts-description' }, part.description || 'Part description'),
