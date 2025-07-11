@@ -440,7 +440,7 @@ function renderDashboard(dashboard, timeout) {
   if (fadeTimeout) clearTimeout(fadeTimeout);
   if (idleTimeout) clearTimeout(idleTimeout);
   if (clockInterval) clearInterval(clockInterval);
-  dashboardTimeout = setTimeout(showIdleMessage, timeout || 35000);
+  dashboardTimeout = setTimeout(showIdleMessage, timeout || 30000);
 }
 
 function setupScreenId() {
@@ -458,6 +458,8 @@ function hasUsableData(dashboard) {
   
   return hasJobs || hasParts || hasMessages;
 }
+
+function isMessageForThisScreen(data) {
   // If this screen is set to "all_doors", show all events
   if (currentScreenId === 'all_doors') return true;
   
@@ -598,7 +600,7 @@ function initializeApp() {
             }
           ]
         };
-        renderDashboard(demoDashboard, 35000);
+        renderDashboard(demoDashboard, 30000);
       }, 1500);
     }, 5000);
   }
