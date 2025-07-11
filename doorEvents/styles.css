@@ -59,7 +59,7 @@ body {
   opacity: 0;
 }
 
-/* Header Section - Simplified */
+/* Header Section - Larger text */
 .header-section {
   display: flex;
   justify-content: center;
@@ -73,7 +73,7 @@ body {
 
 .welcome-text {
   font-family: var(--titleFontFamily);
-  font-size: 3.5rem;
+  font-size: 4.5rem;
   font-weight: 800;
   color: var(--kelly-green);
   text-align: center;
@@ -185,7 +185,7 @@ body {
 }
 
 .section-title {
-  font-size: 2.2rem;
+  font-size: 3.2rem;
   font-weight: 600;
   color: var(--gray-900);
   margin-bottom: 2rem;
@@ -196,19 +196,19 @@ body {
 }
 
 .section-icon {
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   background: var(--kelly-green);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 2.2rem;
   color: var(--white);
   box-shadow: var(--shadow-sm);
 }
 
-/* Job Cards - TIGHTER, MORE COMPACT DESIGN */
+/* Job Cards - LARGER TEXT */
 .job-card {
   background: var(--white);
   border-radius: 16px;
@@ -234,11 +234,11 @@ body {
 .job-card-content {
   display: flex;
   height: 100%;
-  min-height: 100px;
+  min-height: 130px;
 }
 
 .job-time-bar {
-  width: 150px;
+  width: 180px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -249,7 +249,7 @@ body {
 }
 
 .job-time {
-  font-size: 1.4rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--white);
   text-align: center;
@@ -258,7 +258,7 @@ body {
 }
 
 .job-number {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.9);
   text-align: center;
@@ -277,7 +277,7 @@ body {
 }
 
 .job-customer {
-  font-size: 1.4rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 0.4rem;
@@ -286,7 +286,7 @@ body {
 }
 
 .job-location {
-  font-size: 1rem;
+  font-size: 1.4rem;
   color: var(--gray-700);
   margin-bottom: 0.8rem;
   font-weight: 500;
@@ -301,7 +301,7 @@ body {
 }
 
 .job-status {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--kelly-green);
   background: var(--light-green);
@@ -311,7 +311,7 @@ body {
 }
 
 .job-category {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   color: var(--gray-700);
   font-weight: 500;
   background: var(--gray-100);
@@ -319,7 +319,7 @@ body {
   border-radius: 20px;
 }
 
-/* Parts Transfer Cards - Job card style layout */
+/* Parts Transfer Cards - LARGER TEXT */
 .parts-card {
   background: var(--white);
   border: 2px solid var(--warning-orange);
@@ -338,11 +338,11 @@ body {
 .parts-card-content {
   display: flex;
   height: 100%;
-  min-height: 100px;
+  min-height: 130px;
 }
 
 .parts-bin-bar {
-  width: 150px;
+  width: 180px;
   background: var(--warning-orange);
   display: flex;
   flex-direction: column;
@@ -354,7 +354,7 @@ body {
 }
 
 .parts-bin-label {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--white);
   text-align: center;
@@ -364,7 +364,7 @@ body {
 }
 
 .parts-bin {
-  font-size: 2.8rem;
+  font-size: 3.6rem;
   font-weight: 800;
   color: var(--white);
   text-align: center;
@@ -381,7 +381,7 @@ body {
 }
 
 .parts-description {
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 0.4rem;
@@ -390,20 +390,20 @@ body {
 }
 
 .parts-job {
-  font-size: 0.9rem;
+  font-size: 1.3rem;
   color: var(--gray-700);
   font-weight: 500;
   margin-bottom: 0.6rem;
 }
 
 .parts-notes {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   color: var(--gray-700);
   font-style: italic;
   line-height: 1.3;
 }
 
-/* Messages Cards - Clean design */
+/* Messages Cards - LARGER TEXT */
 .message-card {
   background: var(--white);
   border: 2px solid var(--kelly-green);
@@ -423,21 +423,21 @@ body {
 .message-card:nth-child(3) { animation-delay: 0.4s; }
 
 .message-icon {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: var(--kelly-green);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  font-size: 2.4rem;
   color: var(--white);
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
 .message-text {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 500;
   color: var(--gray-900);
   flex: 1;
@@ -480,7 +480,7 @@ body {
   animation: pulse 2s infinite;
 }
 
-/* Alert Styles - NO EMOJIS */
+/* Alert Styles - LARGER TEXT */
 .parts-alert {
   background: var(--alert-red);
   color: var(--white);
@@ -489,17 +489,17 @@ body {
   margin-bottom: 2rem;
   font-weight: 700;
   text-align: center;
-  font-size: 1.4rem;
+  font-size: 2rem;
   animation: pulse 2s infinite;
   box-shadow: var(--shadow);
 }
 
-/* No Jobs Message */
+/* No Jobs Message - LARGER TEXT */
 .no-jobs {
   text-align: center;
   padding: 4rem 2rem;
   color: var(--gray-700);
-  font-size: 1.4rem;
+  font-size: 2rem;
   font-weight: 400;
   background: var(--white);
   border-radius: 20px;
