@@ -713,14 +713,34 @@ function showIdleMessage() {
 }
 
 function fadeOutAndShowIdle() {
-  // Add fade-out class to current content
-  const currentContent = document.querySelector('.content-container, .idle-container');
-  if (currentContent) {
-    currentContent.classList.remove('fade-in');
-    currentContent.classList.add('fade-out');
+  // Target only the content inside the container, not the background
+  const contentElements = document.querySelectorAll('.welcome-large, .header-section, .content-body, .idle-content');
+  
+  if (contentElements.length > 0) {
+    // Fade out content elements
+    contentElements.forEach(element => {
+      element.style.transition = 'opacity 0.6s ease-out';
+      element.style.opacity = '0';
+    });
     
-    // Wait for fade out animation to complete, then show idle
-    setTimeout(showIdleMessage, 600); // Match CSS transition duration
+    // Wait for fade out, then show idle with fade in
+    setTimeout(() => {
+      ReactDOM.render(e(IdleMessage), document.getElementById("root"));
+      
+      // Force immediate opacity 0 on new content, then fade in
+      setTimeout(() => {
+        const newIdleContent = document.querySelector('.idle-content');
+        if (newIdleContent) {
+          newIdleContent.style.opacity = '0';
+          newIdleContent.style.transition = 'opacity 0.6s ease-in';
+          
+          // Trigger fade in
+          setTimeout(() => {
+            newIdleContent.style.opacity = '1';
+          }, 50);
+        }
+      }, 50);
+    }, 600); // Match CSS transition duration
   } else {
     showIdleMessage();
   }
