@@ -2,6 +2,10 @@ const e = React.createElement;
 const useState = React.useState;
 const useEffect = React.useEffect;
 
+// Version tracking
+const APP_VERSION = "1.2.3";
+console.log(`🚀 Freeflow Door Display System v${APP_VERSION} loaded at ${new Date().toLocaleString()}`);
+
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "freeflow-internal-projects.firebaseapp.com",
@@ -713,40 +717,53 @@ function showIdleMessage() {
 }
 
 function fadeOutAndShowIdle() {
-  // Target only the content inside the container, not the background
-  const contentElements = document.querySelectorAll('.welcome-large, .header-section, .content-body, .idle-content');
+  console.log(`[v${APP_VERSION}] Starting fade transition to idle screen`);
   
-  if (contentElements.length > 0) {
-    // Fade out content elements
-    contentElements.forEach(element => {
-      element.style.transition = 'opacity 0.6s ease-out';
-      element.style.opacity = '0';
-    });
-    
-    // Wait for fade out, then show idle with fade in
-    setTimeout(() => {
-      ReactDOM.render(e(IdleMessage), document.getElementById("root"));
-      
-      // Force immediate opacity 0 on new content, then fade in
-      setTimeout(() => {
-        const newIdleContent = document.querySelector('.idle-content');
-        if (newIdleContent) {
-          newIdleContent.style.opacity = '0';
-          newIdleContent.style.transition = 'opacity 0.6s ease-in';
-          
-          // Trigger fade in
-          setTimeout(() => {
-            newIdleContent.style.opacity = '1';
-          }, 50);
-        }
-      }, 50);
-    }, 600); // Match CSS transition duration
-  } else {
+  // Get current content container
+  const currentContainer = document.querySelector('.content-container');
+  if (!currentContainer) {
+    console.log('No current container found, showing idle directly');
     showIdleMessage();
+    return;
   }
+  
+  // Create overlay for smooth transition
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    pointer-events: none;
+    z-index: 1000;
+  `;
+  document.body.appendChild(overlay);
+  
+  // Fade out current content only (not background)
+  const contentElements = currentContainer.querySelectorAll('.welcome-large, .header-section, .content-body');
+  contentElements.forEach(element => {
+    element.style.transition = 'opacity 0.6s ease-out';
+    element.style.opacity = '0';
+  });
+  
+  // After fade out completes, render new content
+  setTimeout(() => {
+    console.log(`[v${APP_VERSION}] Rendering idle message`);
+    ReactDOM.render(e(IdleMessage), document.getElementById("root"));
+    
+    // Remove overlay after new content is rendered
+    setTimeout(() => {
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+    }, 100);
+  }, 650); // Slightly longer than fade duration
 }
 
 function renderWelcome(data) {
+  console.log(`[v${APP_VERSION}] Rendering welcome message for: ${data.user || 'Guest'}`);
   ReactDOM.render(e(WelcomeMessage, { data: data }), document.getElementById("root"));
   if (fadeTimeout) clearTimeout(fadeTimeout);
   if (idleTimeout) clearTimeout(idleTimeout);
@@ -754,6 +771,7 @@ function renderWelcome(data) {
 }
 
 function renderDashboard(dashboard, timeout) {
+  console.log(`[v${APP_VERSION}] Rendering dashboard with ${timeout}ms timeout`);
   ReactDOM.render(e(Dashboard, { dashboard: dashboard }), document.getElementById("root"));
   if (fadeTimeout) clearTimeout(fadeTimeout);
   if (idleTimeout) clearTimeout(idleTimeout);
@@ -824,15 +842,16 @@ function isMessageForThisScreen(data) {
 }
 
 function initializeApp() {
+  console.log(`[v${APP_VERSION}] Initializing app with screen ID: ${currentScreenId}`);
   showIdleMessage();
 
   if (db) {
     db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
       const data = snapshot.val();
-      console.log('Inbound RTDB event data:', data);
+      console.log(`[v${APP_VERSION}] Inbound RTDB event data:`, data);
       
       if (!isMessageForThisScreen(data)) {
-        console.log('Message not for this screen, ignoring');
+        console.log(`[v${APP_VERSION}] Message not for this screen, ignoring`);
         return;
       }
 
@@ -860,7 +879,7 @@ function initializeApp() {
             
             // Check if user has no data at all (no jobs, no parts, no messages)
             if (hasNoDataAtAll(dashboard)) {
-              console.log('User has no data at all, staying on welcome screen for 8 seconds');
+              console.log(`[v${APP_VERSION}] User has no data at all, staying on welcome screen for 8 seconds`);
               setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
             }
             // Check if there's usable data to display
@@ -869,24 +888,24 @@ function initializeApp() {
                 renderDashboard(dashboard, 30000);
               }, 1500);
             } else {
-              console.log('No usable data in dashboard, staying on welcome screen');
+              console.log(`[v${APP_VERSION}] No usable data in dashboard, staying on welcome screen`);
               setTimeout(showIdleMessage, 10000); // 10 second timeout for no data
             }
           } else {
-            console.error('Failed to fetch dashboard data');
+            console.error(`[v${APP_VERSION}] Failed to fetch dashboard data`);
             setTimeout(showIdleMessage, timeout);
           }
         } catch (e) {
-          console.error("Error fetching dashboard from Make.com:", e);
+          console.error(`[v${APP_VERSION}] Error fetching dashboard from Make.com:`, e);
           setTimeout(showIdleMessage, timeout);
         }
       } else {
         setTimeout(showIdleMessage, timeout);
       }
     });
-    console.log('App initialized with Firebase, waiting for data pushes...');
+    console.log(`[v${APP_VERSION}] App initialized with Firebase, waiting for data pushes...`);
   } else {
-    console.log('App initialized without Firebase - demo mode');
+    console.log(`[v${APP_VERSION}] App initialized without Firebase - demo mode`);
     
     setTimeout(function() {
       const demoData = {
@@ -958,7 +977,7 @@ function initializeApp() {
         
         // Check if user has no data at all (no jobs, no parts, no messages)
         if (hasNoDataAtAll(demoDashboard)) {
-          console.log('Demo: User has no data at all, staying on welcome screen for 8 seconds');
+          console.log(`[v${APP_VERSION}] Demo: User has no data at all, staying on welcome screen for 8 seconds`);
           setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
         } else {
           renderDashboard(demoDashboard, 30000);
@@ -969,6 +988,8 @@ function initializeApp() {
 }
 
 window.onload = function() {
+  console.log(`[v${APP_VERSION}] Window loaded, setting up event listeners and initializing`);
+  
   // Add keyboard shortcut to reset screen configuration
   document.addEventListener('keydown', function(event) {
     // Ctrl + Shift + R to reset screen configuration
@@ -976,7 +997,7 @@ window.onload = function() {
       event.preventDefault();
       if (confirm('Reset screen configuration? This will show the setup screen again.')) {
         localStorage.removeItem('screencloudScreenId');
-        console.log('Screen ID reset via keyboard shortcut');
+        console.log(`[v${APP_VERSION}] Screen ID reset via keyboard shortcut`);
         location.reload();
       }
     }
@@ -986,14 +1007,14 @@ window.onload = function() {
   getScreenIdentifier().then((screenId) => {
     currentScreenId = screenId;
     if (currentScreenId) {
-      console.log('Screen ID determined:', currentScreenId);
+      console.log(`[v${APP_VERSION}] Screen ID determined: ${currentScreenId}`);
       initializeApp();
     } else {
-      console.log('Screen ID not found, showing setup');
+      console.log(`[v${APP_VERSION}] Screen ID not found, showing setup`);
       setupScreenId();
     }
   }).catch((error) => {
-    console.error('Error getting screen ID:', error);
+    console.error(`[v${APP_VERSION}] Error getting screen ID:`, error);
     setupScreenId();
   });
 };
