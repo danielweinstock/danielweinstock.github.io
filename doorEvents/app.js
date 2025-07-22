@@ -712,6 +712,20 @@ function showIdleMessage() {
   ReactDOM.render(e(IdleMessage), document.getElementById("root"));
 }
 
+function fadeOutAndShowIdle() {
+  // Add fade-out class to current content
+  const currentContent = document.querySelector('.content-container, .idle-container');
+  if (currentContent) {
+    currentContent.classList.remove('fade-in');
+    currentContent.classList.add('fade-out');
+    
+    // Wait for fade out animation to complete, then show idle
+    setTimeout(showIdleMessage, 600); // Match CSS transition duration
+  } else {
+    showIdleMessage();
+  }
+}
+
 function renderWelcome(data) {
   ReactDOM.render(e(WelcomeMessage, { data: data }), document.getElementById("root"));
   if (fadeTimeout) clearTimeout(fadeTimeout);
@@ -741,6 +755,29 @@ function hasUsableData(dashboard) {
   const hasMessages = dashboard.messages && dashboard.messages.length > 0;
   
   return hasJobs || hasParts || hasMessages;
+}
+
+function hasNoDataAtAll(dashboard) {
+  // Check if all three data arrays are completely empty
+  let jobs = [];
+  if (dashboard.dispatch && dashboard.dispatch.ASSIGNED) {
+    try {
+      const allVisits = Object.values(dashboard.dispatch.ASSIGNED).flatMap(function(obj) {
+        return Object.values(obj);
+      });
+      jobs = allVisits.filter(function(j) {
+        return j && j.jobNumber && j.jobStartDate;
+      });
+    } catch (error) {
+      console.error('Error processing jobs for empty check:', error);
+      jobs = [];
+    }
+  }
+  
+  const parts = dashboard.parts_transfer || [];
+  const messages = dashboard.messages || [];
+  
+  return jobs.length === 0 && parts.length === 0 && messages.length === 0;
 }
 
 function isMessageForThisScreen(data) {
@@ -801,8 +838,13 @@ function initializeApp() {
             const dashboard = await resp.json();
             dashboard.userPayload = eventData;
             
+            // Check if user has no data at all (no jobs, no parts, no messages)
+            if (hasNoDataAtAll(dashboard)) {
+              console.log('User has no data at all, staying on welcome screen for 8 seconds');
+              setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
+            }
             // Check if there's usable data to display
-            if (hasUsableData(dashboard)) {
+            else if (hasUsableData(dashboard)) {
               setTimeout(function() {
                 renderDashboard(dashboard, 30000);
               }, 1500);
@@ -882,9 +924,73 @@ function initializeApp() {
               messageId: "msg1",
               message_text: "Remember to check equipment before departure"
             }
+        const demoDashboard = {
+          userPayload: demoData,
+          dispatch: {
+            ASSIGNED: {
+              tech1: {
+                job1: {
+                  jobNumber: "12345",
+                  jobStartDate: "2025-07-10",
+                  startMin: 540,
+                  customerName: "ABC Beverage Co",
+                  city_state: "Boston, MA",
+                  postal_code: "02101",
+                  job_category: "Installation",
+                  jobStatusName: "Scheduled"
+                },
+                job2: {
+                  jobNumber: "12346",
+                  jobStartDate: "2025-07-10",
+                  startMin: 720,
+                  customerName: "XYZ Restaurant",
+                  city_state: "Springfield, MA",
+                  postal_code: "01103",
+                  job_category: "Maintenance",
+                  jobStatusName: "Confirmed"
+                }
+              }
+            }
+          },
+          parts_transfer: [
+            {
+              transfer_id: "pt1",
+              description: "CO2 Regulator - Model XR500",
+              job_number: "12345",
+              notes: "Required for installation tomorrow"
+            }
+          ],
+          messages: [
+            {
+              messageId: "msg1",
+              message_text: "Remember to check equipment before departure"
+            }
           ]
         };
-        renderDashboard(demoDashboard, 30000);
+        
+        // Test no data scenario: Comment out the above and uncomment below
+        // const demoDashboard = {
+        //   userPayload: demoData,
+        //   dispatch: { ASSIGNED: {} },
+        //   parts_transfer: [],
+        //   messages: []
+        // };
+        
+        // Test no data scenario: Comment out the above and uncomment below
+        const demoDashboard = {
+          userPayload: demoData,
+          dispatch: { ASSIGNED: {} },
+          parts_transfer: [],
+          messages: []
+        };
+        
+        // Check if user has no data at all (no jobs, no parts, no messages)
+        if (hasNoDataAtAll(demoDashboard)) {
+          console.log('Demo: User has no data at all, staying on welcome screen for 8 seconds');
+          setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
+        } else {
+          renderDashboard(demoDashboard, 30000);
+        }
       }, 1500);
     }, 5000);
   }
