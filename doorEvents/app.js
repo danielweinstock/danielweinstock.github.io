@@ -3,7 +3,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 // Version tracking
-const APP_VERSION = "1.2.3";
+const APP_VERSION = "1.2.4";
 console.log(`🚀 Freeflow Door Display System v${APP_VERSION} loaded at ${new Date().toLocaleString()}`);
 
 const firebaseConfig = {
@@ -719,47 +719,25 @@ function showIdleMessage() {
 function fadeOutAndShowIdle() {
   console.log(`[v${APP_VERSION}] Starting fade transition to idle screen`);
   
-  // Get current content container
-  const currentContainer = document.querySelector('.content-container');
-  if (!currentContainer) {
-    console.log('No current container found, showing idle directly');
+  // Find current content containers
+  const currentContent = document.querySelector('.content-container');
+  if (!currentContent) {
+    console.log(`[v${APP_VERSION}] No current container found, showing idle directly`);
     showIdleMessage();
     return;
   }
   
-  // Create overlay for smooth transition
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: inherit;
-    pointer-events: none;
-    z-index: 1000;
-  `;
-  document.body.appendChild(overlay);
+  // Add fade-out class to current container
+  currentContent.classList.remove('fade-in');
+  currentContent.classList.add('fade-out');
   
-  // Fade out current content only (not background)
-  const contentElements = currentContainer.querySelectorAll('.welcome-large, .header-section, .content-body');
-  contentElements.forEach(element => {
-    element.style.transition = 'opacity 0.6s ease-out';
-    element.style.opacity = '0';
-  });
+  console.log(`[v${APP_VERSION}] Applied fade-out class, waiting 600ms`);
   
-  // After fade out completes, render new content
+  // Wait for CSS transition to complete, then render new content
   setTimeout(() => {
-    console.log(`[v${APP_VERSION}] Rendering idle message`);
+    console.log(`[v${APP_VERSION}] Rendering idle message after fade-out`);
     ReactDOM.render(e(IdleMessage), document.getElementById("root"));
-    
-    // Remove overlay after new content is rendered
-    setTimeout(() => {
-      if (overlay.parentNode) {
-        overlay.parentNode.removeChild(overlay);
-      }
-    }, 100);
-  }, 650); // Slightly longer than fade duration
+  }, 600); // Match your CSS transition duration
 }
 
 function renderWelcome(data) {
