@@ -3,7 +3,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 // Version tracking
-const APP_VERSION = "1.2.4";
+const APP_VERSION = "1.2.5";
 console.log(`🚀 Freeflow Door Display System v${APP_VERSION} loaded at ${new Date().toLocaleString()}`);
 
 const firebaseConfig = {
