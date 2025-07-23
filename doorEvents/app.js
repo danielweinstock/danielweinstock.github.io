@@ -3,7 +3,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 // Version tracking
-const APP_VERSION = "1.2.5";
+const APP_VERSION = "1.2.6";
 console.log(`🚀 Freeflow Door Display System v${APP_VERSION} loaded at ${new Date().toLocaleString()}`);
 
 const firebaseConfig = {
@@ -731,13 +731,13 @@ function fadeOutAndShowIdle() {
   currentContent.classList.remove('fade-in');
   currentContent.classList.add('fade-out');
   
-  console.log(`[v${APP_VERSION}] Applied fade-out class, waiting 600ms`);
+  console.log(`[v${APP_VERSION}] Applied fade-out class, waiting 1000ms`);
   
-  // Wait for CSS transition to complete, then render new content
+  // Wait longer for CSS transition to complete, then render new content
   setTimeout(() => {
     console.log(`[v${APP_VERSION}] Rendering idle message after fade-out`);
     ReactDOM.render(e(IdleMessage), document.getElementById("root"));
-  }, 600); // Match your CSS transition duration
+  }, 1000); // INCREASED: from 600ms to 1000ms for longer pause
 }
 
 function renderWelcome(data) {
