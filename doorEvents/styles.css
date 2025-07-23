@@ -47,7 +47,7 @@ body {
   position: relative;
 }
 
-/* FIXED: Updated fade transition classes */
+/* FIXED: Updated fade transition classes with longer duration */
 .content-container, .idle-container {
   display: flex;
   flex-direction: column;
@@ -55,7 +55,7 @@ body {
   width: 100vw;
   position: relative;
   opacity: 0;
-  transition: opacity 0.6s ease-in-out;
+  transition: opacity 0.8s ease-in-out; /* INCREASED: from 0.6s to 0.8s */
   background: transparent; /* FIXED: Remove individual backgrounds */
 }
 
@@ -126,6 +126,7 @@ body {
   font-family: var(--titleFontFamily);
   letter-spacing: -0.02em;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 0.85; /* ADDED: Tighter line spacing for multi-line greetings */
 }
 
 .clock-container {
