@@ -3,7 +3,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 // Version tracking
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.3.2";
 console.log(`🚀 Freeflow Door Display System v${APP_VERSION} loaded at ${new Date().toLocaleString()}`);
 
 const firebaseConfig = {
@@ -18,25 +18,13 @@ const firebaseConfig = {
 };
 
 let db = null;
-let auth = null;
 
 // Initialize Firebase if available
 if (typeof firebase !== 'undefined') {
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
-    auth = firebase.auth();
     console.log('Firebase initialized successfully');
-    
-    // If using anonymous authentication (Option A), sign in anonymously
-    auth.signInAnonymously()
-      .then(() => {
-        console.log('Anonymous authentication successful');
-      })
-      .catch((error) => {
-        console.error('Anonymous authentication failed:', error);
-      });
-    
   } catch (error) {
     console.error('Firebase initialization failed:', error);
   }
@@ -224,84 +212,65 @@ function initializeApp() {
     // Set up connection monitoring
     setupFirebaseConnectionMonitoring();
     
-    // Wait for authentication to complete before setting up database listeners
-    const setupDatabaseListener = () => {
-      db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
-        const data = snapshot.val();
-        console.log(`[v${APP_VERSION}] Inbound RTDB event data:`, data);
-        
-        if (!isMessageForThisScreen(data)) {
-          console.log(`[v${APP_VERSION}] Message not for this screen, ignoring`);
-          return;
-        }
+    // Set up database listener (no auth required)
+    db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
+      const data = snapshot.val();
+      console.log(`[v${APP_VERSION}] Inbound RTDB event data:`, data);
+      
+      if (!isMessageForThisScreen(data)) {
+        console.log(`[v${APP_VERSION}] Message not for this screen, ignoring`);
+        return;
+      }
 
-        const firstName = data.user_fname || data.fname || '';
-        const lastName = data.user_lname || data.lname || '';
-        const fullName = data.user || (firstName + ' ' + lastName).trim() || "Guest";
-        const eventType = data.event || "entry";
-        const timeout = data.timeout || 30000;
-        const eventData = Object.assign({}, data, { 
-          user_fname: firstName,
-          user_lname: lastName,
-          user: fullName,
-          eventType: eventType, 
-          timeout: timeout 
-        });
+      const firstName = data.user_fname || data.fname || '';
+      const lastName = data.user_lname || data.lname || '';
+      const fullName = data.user || (firstName + ' ' + lastName).trim() || "Guest";
+      const eventType = data.event || "entry";
+      const timeout = data.timeout || 30000;
+      const eventData = Object.assign({}, data, { 
+        user_fname: firstName,
+        user_lname: lastName,
+        user: fullName,
+        eventType: eventType, 
+        timeout: timeout 
+      });
 
-        renderWelcome(eventData);
+      renderWelcome(eventData);
 
-        if (data.sf_id) {
-          try {
-            const resp = await fetch('https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=' + encodeURIComponent(data.sf_id));
-            if (resp.ok) {
-              const dashboard = await resp.json();
-              dashboard.userPayload = eventData;
-              
-              // Check if user has no data at all (no jobs, no parts, no messages)
-              if (hasNoDataAtAll(dashboard)) {
-                console.log(`[v${APP_VERSION}] User has no data at all, staying on welcome screen for 8 seconds`);
-                setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
-              }
-              // Check if there's usable data to display
-              else if (hasUsableData(dashboard)) {
-                setTimeout(function() {
-                  renderDashboard(dashboard, 30000);
-                }, 1500);
-              } else {
-                console.log(`[v${APP_VERSION}] No usable data in dashboard, staying on welcome screen`);
-                setTimeout(showIdleMessage, 10000); // 10 second timeout for no data
-              }
-            } else {
-              console.error(`[v${APP_VERSION}] Failed to fetch dashboard data`);
-              setTimeout(showIdleMessage, timeout);
+      if (data.sf_id) {
+        try {
+          const resp = await fetch('https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=' + encodeURIComponent(data.sf_id));
+          if (resp.ok) {
+            const dashboard = await resp.json();
+            dashboard.userPayload = eventData;
+            
+            // Check if user has no data at all (no jobs, no parts, no messages)
+            if (hasNoDataAtAll(dashboard)) {
+              console.log(`[v${APP_VERSION}] User has no data at all, staying on welcome screen for 8 seconds`);
+              setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
             }
-          } catch (e) {
-            console.error(`[v${APP_VERSION}] Error fetching dashboard from Make.com:`, e);
+            // Check if there's usable data to display
+            else if (hasUsableData(dashboard)) {
+              setTimeout(function() {
+                renderDashboard(dashboard, 30000);
+              }, 1500);
+            } else {
+              console.log(`[v${APP_VERSION}] No usable data in dashboard, staying on welcome screen`);
+              setTimeout(showIdleMessage, 10000); // 10 second timeout for no data
+            }
+          } else {
+            console.error(`[v${APP_VERSION}] Failed to fetch dashboard data`);
             setTimeout(showIdleMessage, timeout);
           }
-        } else {
+        } catch (e) {
+          console.error(`[v${APP_VERSION}] Error fetching dashboard from Make.com:`, e);
           setTimeout(showIdleMessage, timeout);
         }
-      });
-      console.log(`[v${APP_VERSION}] App initialized with Firebase, waiting for data pushes...`);
-    };
-
-    // If using anonymous auth, wait for it to complete
-    if (auth) {
-      auth.onAuthStateChanged((user) => {
-        if (user) {
-          console.log('User authenticated:', user.isAnonymous ? 'Anonymous' : user.uid);
-          setupDatabaseListener();
-        } else {
-          console.log('User not authenticated');
-          // If not authenticated, you might want to handle this case
-          setupDatabaseListener(); // Or remove this if you require auth
-        }
-      });
-    } else {
-      // No auth configured, proceed directly
-      setupDatabaseListener();
-    }
+      } else {
+        setTimeout(showIdleMessage, timeout);
+      }
+    });
+    console.log(`[v${APP_VERSION}] App initialized with Firebase, waiting for data pushes...`);
   } else {
     console.log(`[v${APP_VERSION}] App initialized without Firebase - demo mode`);
     
