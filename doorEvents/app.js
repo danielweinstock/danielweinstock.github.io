@@ -3,17 +3,18 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 // Version tracking
-const APP_VERSION = "1.2.6";
+const APP_VERSION = "1.3";
 console.log(`🚀 Freeflow Door Display System v${APP_VERSION} loaded at ${new Date().toLocaleString()}`);
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyDM3BKwXhk8BH8MJNpLoWGRlpEBU7oy904",
   authDomain: "freeflow-internal-projects.firebaseapp.com",
   databaseURL: "https://freeflow-internal-projects-default-rtdb.firebaseio.com",
   projectId: "freeflow-internal-projects",
-  storageBucket: "freeflow-internal-projects.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  storageBucket: "freeflow-internal-projects.firebasestorage.app",
+  messagingSenderId: "728885809902",
+  appId: "1:728885809902:web:2921c4e10d1d1d09b8d9ff",
+  measurementId: "G-PVQGK976ML"
 };
 
 let db = null;
