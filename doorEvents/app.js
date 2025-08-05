@@ -3,7 +3,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 // Version tracking
-const APP_VERSION = "1.3";
+const APP_VERSION = "1.3.0";
 console.log(`🚀 Freeflow Door Display System v${APP_VERSION} loaded at ${new Date().toLocaleString()}`);
 
 const firebaseConfig = {
@@ -18,13 +18,25 @@ const firebaseConfig = {
 };
 
 let db = null;
+let auth = null;
 
 // Initialize Firebase if available
 if (typeof firebase !== 'undefined') {
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
+    auth = firebase.auth();
     console.log('Firebase initialized successfully');
+    
+    // If using anonymous authentication (Option A), sign in anonymously
+    auth.signInAnonymously()
+      .then(() => {
+        console.log('Anonymous authentication successful');
+      })
+      .catch((error) => {
+        console.error('Anonymous authentication failed:', error);
+      });
+    
   } catch (error) {
     console.error('Firebase initialization failed:', error);
   }
@@ -32,12 +44,14 @@ if (typeof firebase !== 'undefined') {
   console.warn('Firebase not available - running in demo mode');
 }
 
+// Rest of your existing code stays the same...
 let fadeTimeout = null;
 let idleTimeout = null;
 let clockInterval = null;
 let currentScreenId = null;
 let dashboardTimeout = null;
 
+// [All your existing functions remain unchanged from here down]
 function getScreenIdentifier() {
   const urlParams = new URLSearchParams(window.location.search);
   
@@ -186,6 +200,189 @@ function fallbackScreenIdCheckSync() {
   // 5. No configuration found
   console.log('No screen configuration found');
   return null;
+}
+
+// Enhanced Firebase connection monitoring
+function setupFirebaseConnectionMonitoring() {
+  if (!db) return;
+  
+  const connectedRef = db.ref('.info/connected');
+  connectedRef.on('value', (snapshot) => {
+    if (snapshot.val() === true) {
+      console.log('✅ Firebase connected');
+    } else {
+      console.log('❌ Firebase disconnected');
+    }
+  });
+}
+
+function initializeApp() {
+  console.log(`[v${APP_VERSION}] Initializing app with screen ID: ${currentScreenId}`);
+  showIdleMessage();
+
+  if (db) {
+    // Set up connection monitoring
+    setupFirebaseConnectionMonitoring();
+    
+    // Wait for authentication to complete before setting up database listeners
+    const setupDatabaseListener = () => {
+      db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
+        const data = snapshot.val();
+        console.log(`[v${APP_VERSION}] Inbound RTDB event data:`, data);
+        
+        if (!isMessageForThisScreen(data)) {
+          console.log(`[v${APP_VERSION}] Message not for this screen, ignoring`);
+          return;
+        }
+
+        const firstName = data.user_fname || data.fname || '';
+        const lastName = data.user_lname || data.lname || '';
+        const fullName = data.user || (firstName + ' ' + lastName).trim() || "Guest";
+        const eventType = data.event || "entry";
+        const timeout = data.timeout || 30000;
+        const eventData = Object.assign({}, data, { 
+          user_fname: firstName,
+          user_lname: lastName,
+          user: fullName,
+          eventType: eventType, 
+          timeout: timeout 
+        });
+
+        renderWelcome(eventData);
+
+        if (data.sf_id) {
+          try {
+            const resp = await fetch('https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=' + encodeURIComponent(data.sf_id));
+            if (resp.ok) {
+              const dashboard = await resp.json();
+              dashboard.userPayload = eventData;
+              
+              // Check if user has no data at all (no jobs, no parts, no messages)
+              if (hasNoDataAtAll(dashboard)) {
+                console.log(`[v${APP_VERSION}] User has no data at all, staying on welcome screen for 8 seconds`);
+                setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
+              }
+              // Check if there's usable data to display
+              else if (hasUsableData(dashboard)) {
+                setTimeout(function() {
+                  renderDashboard(dashboard, 30000);
+                }, 1500);
+              } else {
+                console.log(`[v${APP_VERSION}] No usable data in dashboard, staying on welcome screen`);
+                setTimeout(showIdleMessage, 10000); // 10 second timeout for no data
+              }
+            } else {
+              console.error(`[v${APP_VERSION}] Failed to fetch dashboard data`);
+              setTimeout(showIdleMessage, timeout);
+            }
+          } catch (e) {
+            console.error(`[v${APP_VERSION}] Error fetching dashboard from Make.com:`, e);
+            setTimeout(showIdleMessage, timeout);
+          }
+        } else {
+          setTimeout(showIdleMessage, timeout);
+        }
+      });
+      console.log(`[v${APP_VERSION}] App initialized with Firebase, waiting for data pushes...`);
+    };
+
+    // If using anonymous auth, wait for it to complete
+    if (auth) {
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          console.log('User authenticated:', user.isAnonymous ? 'Anonymous' : user.uid);
+          setupDatabaseListener();
+        } else {
+          console.log('User not authenticated');
+          // If not authenticated, you might want to handle this case
+          setupDatabaseListener(); // Or remove this if you require auth
+        }
+      });
+    } else {
+      // No auth configured, proceed directly
+      setupDatabaseListener();
+    }
+  } else {
+    console.log(`[v${APP_VERSION}] App initialized without Firebase - demo mode`);
+    
+    setTimeout(function() {
+      const demoData = {
+        user: "Daniel Weinstock",
+        user_fname: "Daniel",
+        user_lname: "Weinstock", 
+        sf_id: "demo_id",
+        event: "entry",
+        timeout: 30000,
+        door: "Freeflow Office",
+        emp_id: "demo-emp-id",
+        timestamp: Math.floor(Date.now() / 1000)
+      };
+      renderWelcome(demoData);
+      
+      setTimeout(function() {
+        // Demo dashboard with data - comment/uncomment as needed for testing
+        const demoDashboard = {
+          userPayload: demoData,
+          dispatch: {
+            ASSIGNED: {
+              tech1: {
+                job1: {
+                  jobNumber: "12345",
+                  jobStartDate: "2025-07-10",
+                  startMin: 540,
+                  customerName: "ABC Beverage Co",
+                  city_state: "Boston, MA",
+                  postal_code: "02101",
+                  job_category: "Installation",
+                  jobStatusName: "Scheduled"
+                },
+                job2: {
+                  jobNumber: "12346",
+                  jobStartDate: "2025-07-10",
+                  startMin: 720,
+                  customerName: "XYZ Restaurant",
+                  city_state: "Springfield, MA",
+                  postal_code: "01103",
+                  job_category: "Maintenance",
+                  jobStatusName: "Confirmed"
+                }
+              }
+            }
+          },
+          parts_transfer: [
+            {
+              transfer_id: "pt1",
+              description: "CO2 Regulator - Model XR500",
+              job_number: "12345",
+              notes: "Required for installation tomorrow"
+            }
+          ],
+          messages: [
+            {
+              messageId: "msg1",
+              message_text: "Remember to check equipment before departure"
+            }
+          ]
+        };
+        
+        // Test no data scenario: Uncomment below and comment out above for testing
+        // const demoDashboard = {
+        //   userPayload: demoData,
+        //   dispatch: { ASSIGNED: {} },
+        //   parts_transfer: [],
+        //   messages: []
+        // };
+        
+        // Check if user has no data at all (no jobs, no parts, no messages)
+        if (hasNoDataAtAll(demoDashboard)) {
+          console.log(`[v${APP_VERSION}] Demo: User has no data at all, staying on welcome screen for 8 seconds`);
+          setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
+        } else {
+          renderDashboard(demoDashboard, 30000);
+        }
+      }, 1500);
+    }, 5000);
+  }
 }
 
 function decodeHtmlEntities(text) {
@@ -818,152 +1015,6 @@ function isMessageForThisScreen(data) {
   }
   
   return false;
-}
-
-function initializeApp() {
-  console.log(`[v${APP_VERSION}] Initializing app with screen ID: ${currentScreenId}`);
-  showIdleMessage();
-
-  if (db) {
-    db.ref('doorEvents').limitToLast(1).on('child_added', async function(snapshot) {
-      const data = snapshot.val();
-      console.log(`[v${APP_VERSION}] Inbound RTDB event data:`, data);
-      
-      if (!isMessageForThisScreen(data)) {
-        console.log(`[v${APP_VERSION}] Message not for this screen, ignoring`);
-        return;
-      }
-
-      const firstName = data.user_fname || data.fname || '';
-      const lastName = data.user_lname || data.lname || '';
-      const fullName = data.user || (firstName + ' ' + lastName).trim() || "Guest";
-      const eventType = data.event || "entry";
-      const timeout = data.timeout || 30000;
-      const eventData = Object.assign({}, data, { 
-        user_fname: firstName,
-        user_lname: lastName,
-        user: fullName,
-        eventType: eventType, 
-        timeout: timeout 
-      });
-
-      renderWelcome(eventData);
-
-      if (data.sf_id) {
-        try {
-          const resp = await fetch('https://hook.us1.make.celonis.com/t3yygxqt3ir6ybqo4uyms9d9gaahasxg?sf_id=' + encodeURIComponent(data.sf_id));
-          if (resp.ok) {
-            const dashboard = await resp.json();
-            dashboard.userPayload = eventData;
-            
-            // Check if user has no data at all (no jobs, no parts, no messages)
-            if (hasNoDataAtAll(dashboard)) {
-              console.log(`[v${APP_VERSION}] User has no data at all, staying on welcome screen for 8 seconds`);
-              setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
-            }
-            // Check if there's usable data to display
-            else if (hasUsableData(dashboard)) {
-              setTimeout(function() {
-                renderDashboard(dashboard, 30000);
-              }, 1500);
-            } else {
-              console.log(`[v${APP_VERSION}] No usable data in dashboard, staying on welcome screen`);
-              setTimeout(showIdleMessage, 10000); // 10 second timeout for no data
-            }
-          } else {
-            console.error(`[v${APP_VERSION}] Failed to fetch dashboard data`);
-            setTimeout(showIdleMessage, timeout);
-          }
-        } catch (e) {
-          console.error(`[v${APP_VERSION}] Error fetching dashboard from Make.com:`, e);
-          setTimeout(showIdleMessage, timeout);
-        }
-      } else {
-        setTimeout(showIdleMessage, timeout);
-      }
-    });
-    console.log(`[v${APP_VERSION}] App initialized with Firebase, waiting for data pushes...`);
-  } else {
-    console.log(`[v${APP_VERSION}] App initialized without Firebase - demo mode`);
-    
-    setTimeout(function() {
-      const demoData = {
-        user: "Daniel Weinstock",
-        user_fname: "Daniel",
-        user_lname: "Weinstock", 
-        sf_id: "demo_id",
-        event: "entry",
-        timeout: 30000,
-        door: "Freeflow Office",
-        emp_id: "demo-emp-id",
-        timestamp: Math.floor(Date.now() / 1000)
-      };
-      renderWelcome(demoData);
-      
-      setTimeout(function() {
-        // Demo dashboard with data - comment/uncomment as needed for testing
-        const demoDashboard = {
-          userPayload: demoData,
-          dispatch: {
-            ASSIGNED: {
-              tech1: {
-                job1: {
-                  jobNumber: "12345",
-                  jobStartDate: "2025-07-10",
-                  startMin: 540,
-                  customerName: "ABC Beverage Co",
-                  city_state: "Boston, MA",
-                  postal_code: "02101",
-                  job_category: "Installation",
-                  jobStatusName: "Scheduled"
-                },
-                job2: {
-                  jobNumber: "12346",
-                  jobStartDate: "2025-07-10",
-                  startMin: 720,
-                  customerName: "XYZ Restaurant",
-                  city_state: "Springfield, MA",
-                  postal_code: "01103",
-                  job_category: "Maintenance",
-                  jobStatusName: "Confirmed"
-                }
-              }
-            }
-          },
-          parts_transfer: [
-            {
-              transfer_id: "pt1",
-              description: "CO2 Regulator - Model XR500",
-              job_number: "12345",
-              notes: "Required for installation tomorrow"
-            }
-          ],
-          messages: [
-            {
-              messageId: "msg1",
-              message_text: "Remember to check equipment before departure"
-            }
-          ]
-        };
-        
-        // Test no data scenario: Uncomment below and comment out above for testing
-        // const demoDashboard = {
-        //   userPayload: demoData,
-        //   dispatch: { ASSIGNED: {} },
-        //   parts_transfer: [],
-        //   messages: []
-        // };
-        
-        // Check if user has no data at all (no jobs, no parts, no messages)
-        if (hasNoDataAtAll(demoDashboard)) {
-          console.log(`[v${APP_VERSION}] Demo: User has no data at all, staying on welcome screen for 8 seconds`);
-          setTimeout(fadeOutAndShowIdle, 8000); // 8 second timeout with fade out
-        } else {
-          renderDashboard(demoDashboard, 30000);
-        }
-      }, 1500);
-    }, 5000);
-  }
 }
 
 window.onload = function() {
