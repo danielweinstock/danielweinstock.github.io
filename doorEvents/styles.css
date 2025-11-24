@@ -668,6 +668,202 @@ body {
     font-size: 1.6rem;
   }
 
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--gray-900);
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Animations - RIGHT TO LEFT WITH EASING */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+/* Alert Styles - LARGER TEXT */
+.parts-alert {
+  background: var(--alert-red);
+  color: var(--white);
+  padding: 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  text-align: center;
+  font-size: 2rem;
+  animation: pulse 2s infinite;
+  box-shadow: var(--shadow);
+}
+
+/* No Jobs Message - LARGER TEXT */
+.no-jobs {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--gray-700);
+  font-size: 2rem;
+  font-weight: 400;
+  background: var(--white);
+  border-radius: 20px;
+  border: 2px dashed var(--gray-300);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Setup screen styles */
+.setup-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--white);
+  color: var(--gray-900);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--bodyFontFamily);
+  z-index: 9999;
+  text-align: center;
+  padding: 2rem;
+}
+
+.setup-screen h1 {
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  color: var(--gray-900);
+  font-family: var(--titleFontFamily);
+  font-weight: 600;
+}
+
+.setup-screen p {
+  font-size: 1.5rem;
+  margin-bottom: 3rem;
+  color: var(--gray-700);
+}
+
+.setup-button {
+  margin: 1rem;
+  padding: 1.5rem 3rem;
+  font-size: 1.3rem;
+  background: var(--kelly-green);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  font-family: var(--bodyFontFamily);
+}
+
+.setup-button:hover {
+  background: var(--dark-green);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Reset button for idle screen */
+.reset-button {
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  background: var(--alert-red);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  font-family: var(--bodyFontFamily);
+  opacity: 0.8;
+}
+
+.reset-button:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  opacity: 1;
+}
+
+/* Responsive Design for Portrait Mode */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .header-section {
+    padding: 1.5rem;
+    min-height: 100px;
+  }
+
+  .company-name {
+    font-size: 1.8rem;
+  }
+
+  .welcome-text {
+    font-size: 1.4rem;
+  }
+
+  .idle-greeting {
+    font-size: 3rem;
+  }
+
+  .time {
+    font-size: 3.5rem;
+  }
+
+  .date {
+    font-size: 1.6rem;
+  }
+
+  .welcome-name {
+    font-size: 3.5rem;
+  }
+
+  .job-time-bar {
+    width: 120px;
+  }
+
+  .job-time {
+    font-size: 1.8rem;
+  }
+
+  .job-customer {
+    font-size: 1.6rem;
+  }
+
   .section-title {
     font-size: 1.8rem;
   }
@@ -691,7 +887,7 @@ body {
 
 .snowflake {
   position: absolute;
-  top: -10px;
+  top: -20vh;
   color: white;
   font-size: 1em;
   font-family: Arial, sans-serif;
@@ -702,11 +898,12 @@ body {
   animation-timing-function: linear, ease-in-out;
   animation-iteration-count: infinite, infinite;
   animation-play-state: running, running;
+  animation-fill-mode: both;
 }
 
 @keyframes fall {
   0% {
-    top: -10%;
+    top: -20%;
   }
 
   100% {
